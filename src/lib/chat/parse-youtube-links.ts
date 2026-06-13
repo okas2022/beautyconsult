@@ -56,6 +56,55 @@ export function extractVideoRefsFromText(
   return refs;
 }
 
+/** RAG 검색 결과 → YouTube 카드 (AI가 링크를 빠뜨려도 병원 영상 노출) */
+export function videoKnowledgeToRefs(
+  videos: VideoKnowledge[],
+): YoutubeVideoRef[] {
+  const refs: YoutubeVideoRef[] = [];
+  const seen = new Set<string>();
+
+  for (const video of videos) {
+    if (seen.has(video.video_id)) continue;
+    seen.add(video.video_id);
+
+    const script = video.scripts[0];
+    const seconds = script?.seconds ?? 0;
+    const timestamp = formatTimestamp(seconds);
+    const deepLink = `https://youtu.be/${video.video_id}?t=${seconds}`;
+
+    refs.push({
+      video_id: video.video_id,
+      url: video.url ?? `https://youtu.be/${video.video_id}`,
+      title: video.title,
+      start_seconds: seconds,
+      timestamp,
+      deep_link: deepLink,
+      label: `▶ ${video.title} (${timestamp})`,
+    });
+  }
+
+  return refs;
+}
+
+export function mergeVideoRefs(
+  primary: YoutubeVideoRef[],
+  secondary: YoutubeVideoRef[],
+  limit = 3,
+): YoutubeVideoRef[] {
+  const merged: YoutubeVideoRef[] = [];
+  const seen = new Set<string>();
+
+  for (const ref of [...primary, ...secondary]) {
+    const key = ref.video_id;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(ref);
+    if (merged.length >= limit) break;
+  }
+
+  return merged;
+}
+
 /** 메시지 본문에서 URL을 분리해 렌더링용 세그먼트 생성 */
 export function splitMessageWithLinks(text: string): Array<{ type: "text" | "link"; value: string }> {
   const segments: Array<{ type: "text" | "link"; value: string }> = [];

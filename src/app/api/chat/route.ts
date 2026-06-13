@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractVideoRefsFromText } from "@/lib/chat/parse-youtube-links";
+import {
+  extractVideoRefsFromText,
+  mergeVideoRefs,
+  videoKnowledgeToRefs,
+} from "@/lib/chat/parse-youtube-links";
 import { matchProductsBySymptoms } from "@/lib/commerce/product-catalog";
 import { generateChatReply } from "@/lib/gemini/chat-service";
-import { loadHospitalKnowledgeForRefs } from "@/lib/knowledge/hospital-rag";
+import {
+  loadHospitalKnowledgeForRefs,
+  loadHospitalRagContext,
+} from "@/lib/knowledge/hospital-rag";
 import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
 
 export async function POST(request: NextRequest) {
@@ -37,12 +44,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "message is required" }, { status: 400 });
     }
 
-    const [result, knowledge] = await Promise.all([
+    const [result, knowledge, rag] = await Promise.all([
       generateChatReply({ message, history, hospitalId }),
       loadHospitalKnowledgeForRefs(hospitalId),
+      loadHospitalRagContext(message, hospitalId),
     ]);
 
-    const videoRefs = extractVideoRefsFromText(result.reply, knowledge);
+    const fromReply = extractVideoRefsFromText(result.reply, knowledge);
+    const fromRag = videoKnowledgeToRefs(rag.videos);
+    const videoRefs = mergeVideoRefs(fromReply, fromRag);
     const products = matchProductsBySymptoms(result.symptomKeywords);
 
     return NextResponse.json({

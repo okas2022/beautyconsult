@@ -12,6 +12,7 @@
     "youtube:full": "python3 scripts/youtube/fetch_channel_videos.py && npm run youtube:sync && npm run youtube:index",
     "db:leads": "node scripts/apply-leads-migration.mjs",
     "db:migrate": "node scripts/apply-migrations.mjs",
+    "redeploy": "node scripts/redeploy.mjs",
     "youtube:id-hospital": "node scripts/youtube/build-hospital-knowledge.mjs --channel \"https://www.youtube.com/@IDhospital/videos\" --out data/hospitals/id-hospital/videos_knowledge.json --max 12 --name \"아이디병원\"",
     "youtube:da-hospital": "node scripts/youtube/build-hospital-knowledge.mjs --channel \"https://www.youtube.com/@DAPRS/videos\" --out data/hospitals/da-plastic/videos_knowledge.json --max 12 --name \"디에이성형외과\"",
     "youtube:network": "node scripts/youtube/sync-hospital-network.mjs --max 8",

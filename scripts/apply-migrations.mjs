@@ -14,8 +14,17 @@ function getDbUrl() {
   const password = process.env.SUPABASE_DB_PASSWORD;
   const ref = process.env.SUPABASE_PROJECT_REF || "pqqhqkqovxvusxktcuce";
   if (!password) return null;
-  const host = process.env.SUPABASE_DB_HOST || `db.${ref}.supabase.co`;
-  return `postgresql://postgres:${encodeURIComponent(password)}@${host}:5432/postgres`;
+
+  if (process.env.SUPABASE_DB_HOST) {
+    const user = process.env.SUPABASE_DB_USER || "postgres";
+    return `postgresql://${user}:${encodeURIComponent(password)}@${process.env.SUPABASE_DB_HOST}:5432/postgres`;
+  }
+
+  // Supabase pooler (direct db.*.supabase.co often deprecated)
+  const poolerHost =
+    process.env.SUPABASE_POOLER_HOST ||
+    "aws-0-ap-northeast-2.pooler.supabase.com";
+  return `postgresql://postgres.${ref}:${encodeURIComponent(password)}@${poolerHost}:5432/postgres`;
 }
 
 async function main() {
@@ -29,7 +38,7 @@ async function main() {
   const migrationsDir = path.join(__dirname, "../supabase/migrations");
   const files = fs
     .readdirSync(migrationsDir)
-    .filter((f) => f.endsWith(".sql"))
+    .filter((f) => f.endsWith(".sql") && !f.startsWith("ALL_"))
     .sort();
 
   const client = new pg.Client({

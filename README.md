@@ -52,35 +52,34 @@ npm run dev
 
 http://localhost:3000 에서 확인
 
-## Supabase · GitHub · Vercel 자동 배포 설정
+## Supabase · GitHub · Vercel 자동 배포
 
-### 1. GitHub → Vercel 연동 (한 번만)
+### Live URLs
 
-1. [Vercel Dashboard](https://vercel.com/new) → **Import Git Repository**
-2. `okas2022/beautyconsult` 선택
-3. Framework: **Next.js** (자동 감지)
-4. Environment Variables 추가:
+| Service | URL |
+|---------|-----|
+| **Production** | https://beutyconsult.vercel.app |
+| **GitHub** | https://github.com/okas2022/beautyconsult |
+| **Vercel Dashboard** | https://vercel.com/young-joon-seos-projects/beuty_consult |
 
-| Key | Value |
-|-----|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://pqqhqkqovxvusxktcuce.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Publishable Key |
-| `GEMINI_API_KEY` | Google AI Studio API Key (답변 + 벡터 검색) |
+`main` 브랜치 push → Vercel 자동 배포 (GitHub 연동 완료)
 
-5. **Deploy** 클릭
+### 환경 변수 (Vercel에 설정됨)
 
-이후 `main` 브랜치에 push할 때마다 Vercel이 자동으로 빌드·배포합니다.
+| Key | 설명 |
+|-----|------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Publishable Key (클라이언트) |
+| `SUPABASE_SECRET_KEY` | Secret Key (서버 전용) |
+| `SUPABASE_PROJECT_REF` | `pqqhqkqovxvusxktcuce` |
+| `GEMINI_API_KEY` | (추가 필요) AI 답변 |
+| `REPLICATE_API_TOKEN` | (추가 필요) 시뮬레이션 |
 
-### 2. Cursor에서 수정 → 자동 반영 흐름
+### Cursor → 자동 배포 흐름
 
 ```
-Cursor에서 코드 수정 → git push → GitHub → Vercel 자동 배포
+Cursor 수정 → git push origin main → GitHub → Vercel 자동 빌드·배포
 ```
-
-### 3. Supabase
-
-- Project URL: `https://pqqhqkqovxvusxktcuce.supabase.co`
-- Dashboard: https://supabase.com/dashboard/project/pqqhqkqovxvusxktcuce
 
 ## Scripts
 

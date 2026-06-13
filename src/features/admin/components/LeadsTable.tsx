@@ -8,14 +8,12 @@ import {
   type Lead,
   type LeadStatus,
 } from "@/features/leads/types/lead.types";
+import { useAdminKey } from "@/features/admin/store/adminAuthStore";
 import { ADMIN_HEADER } from "@/lib/admin/auth";
 import { cn } from "@/lib/utils";
 
-interface LeadsTableProps {
-  adminKey: string;
-}
-
-export function LeadsTable({ adminKey }: LeadsTableProps) {
+export function LeadsTable() {
+  const adminKey = useAdminKey();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);

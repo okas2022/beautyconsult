@@ -11,6 +11,7 @@ import { LeadBookingModal } from "@/features/leads/components/LeadBookingModal";
 import { useLeadModalStore } from "@/features/leads/store/leadModalStore";
 import { HospitalSelector } from "@/features/hospitals/components/HospitalSelector";
 import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
+import { useHospitalProfileStore } from "@/features/hospitals/store/hospitalProfileStore";
 import { useTrendHandoffStore } from "@/features/trend/store/trendHandoffStore";
 
 function TypingIndicator() {
@@ -49,6 +50,7 @@ export function ChatInterface() {
   const isTyping = useChatStore((s) => s.isTyping);
   const { sendMessage } = useConsultChat();
   const openLeadModal = useLeadModalStore((s) => s.open);
+  const openHospitalDetail = useHospitalProfileStore((s) => s.openDetail);
   const selectedHospital = useHospitalStore((s) => s.getSelectedHospital());
   const consumePendingPrompt = useTrendHandoffStore((s) => s.consumePendingPrompt);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -77,9 +79,17 @@ export function ChatInterface() {
         openLeadModal({ hospitalId: selectedHospital.id });
         return;
       }
+      if (
+        action.includes("자세히") ||
+        action.includes("병원 정보") ||
+        action.includes("병원 소개")
+      ) {
+        openHospitalDetail(selectedHospital.id);
+        return;
+      }
       void sendMessage(action);
     },
-    [openLeadModal, selectedHospital.id, sendMessage],
+    [openHospitalDetail, openLeadModal, selectedHospital.id, sendMessage],
   );
 
   return (

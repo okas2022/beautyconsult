@@ -7,6 +7,10 @@ import {
   type HospitalCatalogEntry,
   type HospitalCategory,
 } from "@/features/hospitals/constants/hospitals";
+import { HospitalProfileCard } from "@/features/hospitals/components/HospitalProfileCard";
+import { HospitalProfileModal } from "@/features/hospitals/components/HospitalProfileModal";
+import { getHospitalProfileForCatalog } from "@/features/hospitals/data/hospital-profiles";
+import { useHospitalProfileStore } from "@/features/hospitals/store/hospitalProfileStore";
 import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +25,10 @@ export function HospitalSelector({ className }: HospitalSelectorProps) {
   const categoryFilter = useHospitalStore((s) => s.categoryFilter);
   const setHospitalId = useHospitalStore((s) => s.setHospitalId);
   const setCategoryFilter = useHospitalStore((s) => s.setCategoryFilter);
+  const openDetail = useHospitalProfileStore((s) => s.openDetail);
+  const isDetailOpen = useHospitalProfileStore((s) => s.isDetailOpen);
+  const detailHospitalId = useHospitalProfileStore((s) => s.detailHospitalId);
+  const closeDetail = useHospitalProfileStore((s) => s.closeDetail);
 
   const filtered =
     categoryFilter === "all"
@@ -28,6 +36,18 @@ export function HospitalSelector({ className }: HospitalSelectorProps) {
       : HOSPITAL_CATALOG.filter((h) => h.category === categoryFilter);
 
   const selected = HOSPITAL_CATALOG.find((h) => h.id === selectedId);
+  const selectedProfile = selected ? getHospitalProfileForCatalog(selected) : undefined;
+  const detailProfile = detailHospitalId
+    ? getHospitalProfileByIdSafe(detailHospitalId)
+    : selectedProfile;
+
+  const handleSelectHospital = (hospital: HospitalCatalogEntry) => {
+    if (selectedId === hospital.id) {
+      openDetail(hospital.id);
+    } else {
+      setHospitalId(hospital.id);
+    }
+  };
 
   return (
     <div className={cn("flex flex-col gap-2.5", className)}>
@@ -60,37 +80,38 @@ export function HospitalSelector({ className }: HospitalSelectorProps) {
             key={hospital.id}
             hospital={hospital}
             selected={selectedId === hospital.id}
-            onSelect={() => setHospitalId(hospital.id)}
+            onSelect={() => handleSelectHospital(hospital)}
           />
         ))}
       </div>
 
-      {selected && (
-        <div className="rounded-xl bg-mint/5 px-3 py-2">
-          <p className="text-[11px] leading-relaxed text-muted">
-            <span className="font-semibold text-mint-dark">{selected.name}</span>
-            {selected.description ? ` · ${selected.description}` : ""}
-          </p>
-          <div className="mt-1 flex flex-wrap gap-1">
-            {selected.specialties.slice(0, 5).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-surface px-2 py-0.5 text-[10px] text-muted"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-          {selected.partnership.status === "prospect" && (
-            <p className="mt-1.5 flex items-center gap-1 text-[10px] text-lavender">
-              <Handshake className="h-3 w-3" />
-              제휴·리퍼럴 협상 대상 병원
-            </p>
-          )}
-        </div>
+      {selected && selectedProfile && (
+        <HospitalProfileCard
+          profile={selectedProfile}
+          hospitalName={selected.name}
+          onDetailClick={() => openDetail(selected.id)}
+        />
       )}
+
+      {selected?.partnership.status === "prospect" && (
+        <p className="flex items-center gap-1 px-1 text-[10px] text-lavender">
+          <Handshake className="h-3 w-3" />
+          제휴·리퍼럴 협상 대상 병원
+        </p>
+      )}
+
+      <HospitalProfileModal
+        isOpen={isDetailOpen}
+        profile={detailProfile ?? null}
+        onClose={closeDetail}
+      />
     </div>
   );
+}
+
+function getHospitalProfileByIdSafe(hospitalId: string) {
+  const entry = HOSPITAL_CATALOG.find((h) => h.id === hospitalId);
+  return entry ? getHospitalProfileForCatalog(entry) : undefined;
 }
 
 function CategoryTab({

@@ -9,7 +9,6 @@ import {
   Play,
   Users,
 } from "lucide-react";
-import { AdminAuthGate } from "@/features/admin/components/AdminAuthGate";
 import { useAdminTenant } from "@/features/admin/hooks/useAdminTenant";
 
 function AdminDashboardContent() {
@@ -75,8 +74,6 @@ function AdminDashboardContent() {
       <p className="mt-8 text-center text-[11px] text-muted">
         테넌트 URL 예:{" "}
         <code className="rounded bg-border/50 px-1">/chat?hospital={tenant.slug}</code>
-        {" · "}
-        <code className="rounded bg-border/50 px-1">{tenant.slug}.beutyconsult.vercel.app</code>
       </p>
     </div>
   );
@@ -84,15 +81,8 @@ function AdminDashboardContent() {
 
 export default function AdminPage() {
   return (
-    <AdminAuthGate
-      title="PreFit B2B Admin"
-      description="병원 관계자 전용 대시보드 — Admin Key로 로그인하세요."
-    >
-      {() => (
-        <Suspense fallback={null}>
-          <AdminDashboardContent />
-        </Suspense>
-      )}
-    </AdminAuthGate>
+    <Suspense fallback={null}>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

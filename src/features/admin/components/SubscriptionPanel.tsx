@@ -5,16 +5,14 @@ import Link from "next/link";
 import { CreditCard, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminTenant } from "@/features/admin/hooks/useAdminTenant";
+import { useAdminKey } from "@/features/admin/store/adminAuthStore";
 import type { Hospital } from "@/features/hospitals/types/hospital.types";
 import { HOSPITAL_CATALOG } from "@/features/hospitals/constants/hospitals";
 import { ADMIN_HEADER } from "@/lib/admin/auth";
 import { cn } from "@/lib/utils";
 
-interface SubscriptionPanelProps {
-  adminKey: string;
-}
-
-export function SubscriptionPanel({ adminKey }: SubscriptionPanelProps) {
+export function SubscriptionPanel() {
+  const adminKey = useAdminKey();
   const tenant = useAdminTenant();
   const [hospital, setHospital] = useState<Hospital | null>(null);
   const [isLoading, setIsLoading] = useState(true);

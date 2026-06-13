@@ -7,13 +7,11 @@ import {
   type HospitalCategory,
 } from "@/features/hospitals/constants/hospitals";
 import type { Lead } from "@/features/leads/types/lead.types";
+import { useAdminKey } from "@/features/admin/store/adminAuthStore";
 import { ADMIN_HEADER } from "@/lib/admin/auth";
 
-interface PartnershipsPanelProps {
-  adminKey: string;
-}
-
-export function PartnershipsPanel({ adminKey }: PartnershipsPanelProps) {
+export function PartnershipsPanel() {
+  const adminKey = useAdminKey();
   const [leads, setLeads] = useState<Lead[]>([]);
 
   useEffect(() => {

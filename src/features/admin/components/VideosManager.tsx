@@ -5,16 +5,14 @@ import Link from "next/link";
 import { Loader2, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminTenant } from "@/features/admin/hooks/useAdminTenant";
+import { useAdminKey } from "@/features/admin/store/adminAuthStore";
 import type { Hospital, HospitalVideo } from "@/features/hospitals/types/hospital.types";
 import { HOSPITAL_CATALOG } from "@/features/hospitals/constants/hospitals";
 import { ADMIN_HEADER } from "@/lib/admin/auth";
 import { cn } from "@/lib/utils";
 
-interface VideosManagerProps {
-  adminKey: string;
-}
-
-export function VideosManager({ adminKey }: VideosManagerProps) {
+export function VideosManager() {
+  const adminKey = useAdminKey();
   const tenant = useAdminTenant();
   const hospitalId = tenant.hospitalId;
   const [hospital, setHospital] = useState<Hospital | null>(null);

@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         ? result.symptomKeywords
         : undefined,
       products: products.length ? products : undefined,
-      nextActions: ["원장님께 예약 / 상담 신청"],
+      nextActions: ["병원 정보 자세히", "원장님께 예약 / 상담 신청"],
       model: result.model,
       source: result.source,
     });

@@ -17,7 +17,11 @@ const SYSTEM_INSTRUCTION = `당신은 성형외과/피부과의 신뢰감 있는
 2) symptom_keywords 배열에 일치하는 증상 키워드만 넣으세요 (최대 2개).
 증상이 불분명하면 symptom_keywords는 빈 배열 []로 반환하세요.`;
 
-const MODEL_CANDIDATES = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"] as const;
+const MODEL_CANDIDATES = [
+  "gemini-2.5-flash",
+  "gemini-flash-latest",
+  "gemini-2.5-pro",
+] as const;
 const TEMPERATURE = 0.25;
 
 export interface ChatHistoryItem {

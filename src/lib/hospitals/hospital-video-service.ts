@@ -143,7 +143,12 @@ export async function loadSubscribedVideosForRag(
 ): Promise<HospitalVideo[]> {
   const subscribed = await isHospitalSubscribed(hospitalId);
   if (!subscribed) return [];
-  return listHospitalVideos(hospitalId);
+  try {
+    return await listHospitalVideos(hospitalId);
+  } catch (error) {
+    console.warn("[loadSubscribedVideosForRag] falling back to file knowledge:", error);
+    return [];
+  }
 }
 
 function normalizeHospitalVideo(row: Record<string, unknown>): HospitalVideo {

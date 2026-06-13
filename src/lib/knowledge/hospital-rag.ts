@@ -13,6 +13,10 @@ import {
 import {
   loadFileKnowledgeForHospital,
 } from "@/lib/knowledge/hospital-knowledge-files";
+import {
+  mergeHospitalKnowledgeSources,
+  transcriptQualityBonus,
+} from "@/lib/knowledge/merge-hospital-knowledge";
 import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
 
 function hospitalVideosToKnowledge(videos: HospitalVideo[]): VideoKnowledge[] {
@@ -83,7 +87,9 @@ export function searchHospitalKnowledge(
     const titleScore = scoreSegment(video.title, queryTokens, expandedQuery) * 2;
     for (const script of video.scripts) {
       const score =
-        scoreSegment(script.text, queryTokens, expandedQuery) + titleScore;
+        scoreSegment(script.text, queryTokens, expandedQuery) +
+        titleScore +
+        transcriptQualityBonus(script.text);
       if (score <= 0) continue;
       ranked.push({
         video: { ...video, scripts: [script] },
@@ -111,8 +117,34 @@ export function searchHospitalKnowledge(
 export interface HospitalRagResult {
   context: string;
   videos: VideoKnowledge[];
-  source: "hospital_db" | "file_fallback" | "none";
+  source: "hospital_db" | "file_fallback" | "merged" | "none";
   subscribed: boolean;
+}
+
+async function loadMergedKnowledgeForHospital(
+  hospitalId: string,
+): Promise<{ knowledge: VideoKnowledge[]; source: HospitalRagResult["source"] }> {
+  let dbKnowledge: VideoKnowledge[] = [];
+  try {
+    const hospitalVideos = await loadSubscribedVideosForRag(hospitalId);
+    dbKnowledge = hospitalVideosToKnowledge(hospitalVideos);
+  } catch (error) {
+    console.warn("[loadMergedKnowledgeForHospital] DB load failed:", error);
+  }
+
+  const fileKnowledge = await loadFileKnowledgeForHospital(hospitalId);
+  const merged = mergeHospitalKnowledgeSources([dbKnowledge, fileKnowledge]);
+
+  if (dbKnowledge.length && fileKnowledge.length) {
+    return { knowledge: merged, source: "merged" };
+  }
+  if (dbKnowledge.length) {
+    return { knowledge: merged, source: "hospital_db" };
+  }
+  if (fileKnowledge.length) {
+    return { knowledge: merged, source: "file_fallback" };
+  }
+  return { knowledge: [], source: "none" };
 }
 
 export async function loadHospitalRagContext(
@@ -131,21 +163,9 @@ export async function loadHospitalRagContext(
     };
   }
 
-  const hospitalVideos = await loadSubscribedVideosForRag(hospitalId);
-  const dbKnowledge = hospitalVideosToKnowledge(hospitalVideos);
+  const { knowledge, source } = await loadMergedKnowledgeForHospital(hospitalId);
 
-  if (dbKnowledge.length) {
-    const relevant = searchHospitalKnowledge(dbKnowledge, query);
-    return {
-      context: formatKnowledgeAsContext(relevant),
-      videos: relevant,
-      source: "hospital_db",
-      subscribed: true,
-    };
-  }
-
-  const fileKnowledge = await loadFileKnowledgeForHospital(hospitalId);
-  if (!fileKnowledge.length) {
+  if (!knowledge.length) {
     return {
       context: `(등록된 ${catalog?.name ?? "병원"} 유튜브 데이터 없음)`,
       videos: [],
@@ -154,11 +174,11 @@ export async function loadHospitalRagContext(
     };
   }
 
-  const relevant = searchHospitalKnowledge(fileKnowledge, query);
+  const relevant = searchHospitalKnowledge(knowledge, query);
   return {
     context: formatKnowledgeAsContext(relevant),
     videos: relevant,
-    source: "file_fallback",
+    source,
     subscribed: true,
   };
 }
@@ -167,10 +187,6 @@ export async function loadHospitalKnowledgeForRefs(
   hospitalId: string = DEFAULT_HOSPITAL_ID,
 ): Promise<VideoKnowledge[]> {
   if (!(await isHospitalSubscribed(hospitalId))) return [];
-
-  const hospitalVideos = await loadSubscribedVideosForRag(hospitalId);
-  const dbKnowledge = hospitalVideosToKnowledge(hospitalVideos);
-  if (dbKnowledge.length) return dbKnowledge;
-
-  return loadFileKnowledgeForHospital(hospitalId);
+  const { knowledge } = await loadMergedKnowledgeForHospital(hospitalId);
+  return knowledge;
 }

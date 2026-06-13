@@ -25,6 +25,12 @@ export default function AdminLeadsPage() {
             >
               유튜브 RAG →
             </Link>
+            <Link
+              href="/admin/partnerships"
+              className="rounded-full border border-border px-3 py-1.5 text-xs text-muted hover:text-foreground"
+            >
+              제휴 네트워크 →
+            </Link>
           </div>
           <LeadsTable adminKey={adminKey} />
         </div>

@@ -6,6 +6,7 @@ import { CalendarCheck, Loader2, Phone, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { useChatStore } from "@/features/chat/store/chatStore";
+import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
 import {
   getPatientId,
   useLeadModalStore,
@@ -24,6 +25,8 @@ export function LeadBookingModal() {
   const context = useLeadModalStore((s) => s.context);
   const close = useLeadModalStore((s) => s.close);
   const getHistoryForApi = useChatStore((s) => s.getHistoryForApi);
+  const selectedHospitalId = useHospitalStore((s) => s.selectedHospitalId);
+  const selectedHospital = useHospitalStore((s) => s.getSelectedHospital());
 
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,7 +51,7 @@ export function LeadBookingModal() {
         body: JSON.stringify({
           phone_number: digits,
           patient_id: getPatientId(),
-          hospital_id: context?.hospitalId,
+          hospital_id: context?.hospitalId ?? selectedHospitalId,
           video_id: context?.videoId,
           video_title: context?.videoTitle,
           messages: getHistoryForApi(),
@@ -109,6 +112,13 @@ export function LeadBookingModal() {
               </div>
 
               <form onSubmit={(e) => void handleSubmit(e)} className="p-5">
+                <p className="mb-3 rounded-xl border border-mint/20 bg-mint/5 px-3 py-2 text-xs">
+                  <span className="text-muted">리퍼 병원 · </span>
+                  <span className="font-semibold text-mint-dark">
+                    {selectedHospital.name}
+                  </span>
+                </p>
+
                 {context?.videoTitle && (
                   <p className="mb-4 rounded-xl bg-mint/5 px-3 py-2 text-xs text-muted">
                     관심 영상:{" "}

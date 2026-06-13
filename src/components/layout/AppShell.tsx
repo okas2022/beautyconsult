@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { TenantBootstrapGate } from "@/features/hospitals/components/TenantBootstrapGate";
 import { PremiumBootstrap } from "@/features/premium/components/PremiumBootstrap";
 import { cn } from "@/lib/utils";
 
@@ -14,9 +15,14 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const isFullHeight = pathname.startsWith("/chat") || pathname.startsWith("/simulate");
+  const hideFooter =
+    isFullHeight ||
+    pathname.startsWith("/trend") ||
+    pathname.startsWith("/mypage");
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+      <TenantBootstrapGate />
       <PremiumBootstrap />
       <Header />
 
@@ -31,7 +37,7 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
 
-      {!isFullHeight && <Footer />}
+      {!hideFooter && <Footer />}
       <MobileNav />
     </div>
   );

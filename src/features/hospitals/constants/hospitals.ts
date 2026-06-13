@@ -289,6 +289,11 @@ export function getHospitalCatalogEntry(
   return HOSPITAL_CATALOG.find((h) => h.id === hospitalId);
 }
 
+export function getHospitalBySlug(slug: string): HospitalCatalogEntry | undefined {
+  const normalized = slug.trim().toLowerCase();
+  return HOSPITAL_CATALOG.find((h) => h.slug.toLowerCase() === normalized);
+}
+
 export function resolveHospitalKnowledgePaths(hospitalId: string): string[] {
   return getHospitalCatalogEntry(hospitalId)?.knowledgePaths ?? [];
 }

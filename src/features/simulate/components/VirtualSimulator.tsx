@@ -314,6 +314,13 @@ export function VirtualSimulator() {
             ? "가상 성형 시뮬레이션"
             : "피부 정밀 리포트"
         }
+        onActivated={() => {
+          if (paywallFeature === "simulate") {
+            void handleSimulate();
+          } else {
+            void handleSkinReport();
+          }
+        }}
       />
     </>
   );

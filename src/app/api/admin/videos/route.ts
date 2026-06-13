@@ -6,7 +6,7 @@ import {
   getHospital,
   listHospitalVideos,
 } from "@/lib/hospitals/hospital-video-service";
-import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
+import { getTenantHospitalIdFromRequest } from "@/lib/tenant/server";
 
 export async function GET(request: NextRequest) {
   if (!verifyAdminRequest(request)) {
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const hospitalId =
-      request.nextUrl.searchParams.get("hospital_id") ?? DEFAULT_HOSPITAL_ID;
+    const queryId = request.nextUrl.searchParams.get("hospital_id");
+    const hospitalId = getTenantHospitalIdFromRequest(request, queryId);
     const [hospital, videos] = await Promise.all([
       getHospital(hospitalId),
       listHospitalVideos(hospitalId),
@@ -36,10 +36,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const url = typeof body?.url === "string" ? body.url.trim() : "";
-    const hospitalId =
-      typeof body?.hospital_id === "string" && body.hospital_id.trim()
-        ? body.hospital_id.trim()
-        : DEFAULT_HOSPITAL_ID;
+    const bodyHospitalId =
+      typeof body?.hospital_id === "string" ? body.hospital_id : null;
+    const hospitalId = getTenantHospitalIdFromRequest(request, bodyHospitalId);
 
     if (!url) {
       return NextResponse.json({ error: "url is required" }, { status: 400 });
@@ -76,10 +75,9 @@ export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const id = typeof body?.id === "string" ? body.id : "";
-    const hospitalId =
-      typeof body?.hospital_id === "string" && body.hospital_id.trim()
-        ? body.hospital_id.trim()
-        : DEFAULT_HOSPITAL_ID;
+    const bodyHospitalId =
+      typeof body?.hospital_id === "string" ? body.hospital_id : null;
+    const hospitalId = getTenantHospitalIdFromRequest(request, bodyHospitalId);
 
     if (!id) {
       return NextResponse.json({ error: "id is required" }, { status: 400 });

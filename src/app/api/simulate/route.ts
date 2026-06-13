@@ -8,7 +8,7 @@ import {
   isReplicateConfigured,
   parseSimulateError,
 } from "@/lib/replicate/inpaint-service";
-import { isUserPremium } from "@/lib/users/user-service";
+import { requirePremiumUser } from "@/lib/premium/require-premium";
 
 export const maxDuration = 120;
 
@@ -29,23 +29,8 @@ export async function POST(request: NextRequest) {
     const userId =
       typeof body?.user_id === "string" ? body.user_id.trim() : "";
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "user_id is required", code: "PREMIUM_REQUIRED" },
-        { status: 400 },
-      );
-    }
-
-    const premium = await isUserPremium(userId);
-    if (!premium) {
-      return NextResponse.json(
-        {
-          error: "프리미엄 멤버십이 필요합니다.",
-          code: "PREMIUM_REQUIRED",
-        },
-        { status: 403 },
-      );
-    }
+    const auth = await requirePremiumUser(userId);
+    if (!auth.ok) return auth.response;
 
     if (!imageBase64) {
       return NextResponse.json(

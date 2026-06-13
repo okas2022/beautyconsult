@@ -11,6 +11,7 @@ import { LeadBookingModal } from "@/features/leads/components/LeadBookingModal";
 import { useLeadModalStore } from "@/features/leads/store/leadModalStore";
 import { HospitalSelector } from "@/features/hospitals/components/HospitalSelector";
 import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
+import { useTrendHandoffStore } from "@/features/trend/store/trendHandoffStore";
 
 function TypingIndicator() {
   return (
@@ -49,9 +50,20 @@ export function ChatInterface() {
   const { sendMessage } = useConsultChat();
   const openLeadModal = useLeadModalStore((s) => s.open);
   const selectedHospital = useHospitalStore((s) => s.getSelectedHospital());
+  const consumePendingPrompt = useTrendHandoffStore((s) => s.consumePendingPrompt);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const handoffSent = useRef(false);
 
   const hasConversation = messages.filter((m) => m.id !== "welcome").length > 0;
+
+  useEffect(() => {
+    if (handoffSent.current || isTyping) return;
+    const prompt = consumePendingPrompt();
+    if (prompt) {
+      handoffSent.current = true;
+      void sendMessage(prompt);
+    }
+  }, [consumePendingPrompt, isTyping, sendMessage]);
 
   useEffect(() => {
     if (scrollRef.current) {

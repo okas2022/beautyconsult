@@ -10,12 +10,15 @@ interface PremiumPaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
   featureName?: string;
+  /** 무료 활성화 직후 재시도 등 */
+  onActivated?: () => void;
 }
 
 export function PremiumPaywallModal({
   isOpen,
   onClose,
   featureName = "프리미엄 기능",
+  onActivated,
 }: PremiumPaywallModalProps) {
   const subscribe = usePremiumStore((s) => s.subscribe);
   const isLoading = usePremiumStore((s) => s.isLoading);
@@ -25,6 +28,7 @@ export function PremiumPaywallModal({
     if (ok) {
       toast.success("Premium 멤버십이 활성화되었습니다!");
       onClose();
+      onActivated?.();
     } else {
       toast.error("결제 처리에 실패했습니다. 다시 시도해 주세요.");
     }
@@ -65,9 +69,10 @@ export function PremiumPaywallModal({
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-muted">
                   월 <span className="font-bold text-foreground">4,900원</span>
-                  으로 무제한 가상 성형과
+                  상당의 기능을
                   <br />
-                  정밀 분석을 이용해 보세요
+                  지금 <span className="font-bold text-mint-dark">무료</span>로
+                  이용해 보세요
                 </p>
               </div>
 
@@ -100,7 +105,7 @@ export function PremiumPaywallModal({
                       처리 중...
                     </>
                   ) : (
-                    "결제하기 (데모)"
+                    "프리미엄 무료 활성화"
                   )}
                 </Button>
 

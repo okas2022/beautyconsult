@@ -1,0 +1,86 @@
+[
+  {
+    "id": "trend-1",
+    "area_tag": "눈성형",
+    "question_summary": "쌍꺼풀 수술 후 부종, 언제쯤 가라앉나요?",
+    "answer_preview": "수술 직후 2~3일이 부종이 가장 심한 시기랍니다. 대부분 2~4주 사이에 점차 가라앉지만, 개인차가 있으니 경과를 지켜보세요.",
+    "youtube": {
+      "video_id": "eh5R8K4fOxs",
+      "title": "쌍꺼풀 수술 후 부종, 언제까지 정상일까?",
+      "thumbnail_url": "https://img.youtube.com/vi/eh5R8K4fOxs/mqdefault.jpg"
+    },
+    "asked_ago": "12분 전",
+    "view_count": 284,
+    "prompt_for_chat": "쌍꺼풀 수술 후 부종이 걱정돼요. 언제쯤 자연스러워질까요?"
+  },
+  {
+    "id": "trend-2",
+    "area_tag": "가슴성형",
+    "question_summary": "모티바 보형물, cc별 비용 차이가 궁금해요",
+    "answer_preview": "모티바 비용은 cc 용량과 마취 방식, 부가 항목 포함 여부에 따라 달라집니다. 상담 시 마취비·재료대·부가세 포함 여부를 꼭 확인해보세요.",
+    "youtube": {
+      "video_id": "AQODTXc5-H0",
+      "title": "모티바 가슴 보형물 비용, cc별 정리",
+      "thumbnail_url": "https://img.youtube.com/vi/AQODTXc5-H0/mqdefault.jpg"
+    },
+    "asked_ago": "34분 전",
+    "view_count": 412,
+    "prompt_for_chat": "모티바 가슴 보형물 cc별 비용이 어떻게 다른지 알려주세요."
+  },
+  {
+    "id": "trend-3",
+    "area_tag": "피부·트러블",
+    "question_summary": "여드름 자국과 홍조, 집에서 관리 가능할까요?",
+    "answer_preview": "여드름 자국은 자외선 차단과 저자극 보습이 기본이랍니다. 홍조가 동반되면 자극적인 각질 제거는 피하고, 전문의 상담을 권해드려요.",
+    "youtube": {
+      "video_id": "qZDy3F_XuPg",
+      "title": "트러블·홍조 홈케어 Q&A",
+      "thumbnail_url": "https://img.youtube.com/vi/qZDy3F_XuPg/mqdefault.jpg"
+    },
+    "asked_ago": "1시간 전",
+    "view_count": 156,
+    "prompt_for_chat": "여드름 자국과 홍조가 같이 있는데, 집에서 어떻게 관리하면 좋을까요?"
+  },
+  {
+    "id": "trend-4",
+    "area_tag": "코성형",
+    "question_summary": "매부리코 + 코끝 처짐, 한 번에 교정 가능한가요?",
+    "answer_preview": "매부리와 코끝 처짐은 연골·연부조직 상태에 따라 수술 범위가 달라집니다. CT·내시 등 정밀 검사 후 맞춤 플랜을 세우는 것이 안전해요.",
+    "youtube": {
+      "video_id": "0n4oGbyZhlc",
+      "title": "코 재수술·매부리 교정 가이드",
+      "thumbnail_url": "https://img.youtube.com/vi/0n4oGbyZhlc/mqdefault.jpg"
+    },
+    "asked_ago": "2시간 전",
+    "view_count": 328,
+    "prompt_for_chat": "매부리코에 코끝이 처져 있는데, 한 번에 교정 수술이 가능한지 궁금해요."
+  },
+  {
+    "id": "trend-5",
+    "area_tag": "리프팅",
+    "question_summary": "40대, 실리프팅 vs 미니 거상 어떤 게 맞을까요?",
+    "answer_preview": "피부 처짐 정도와 지방 분포에 따라 선택이 달라집니다. 가벼운 처짐은 실리, 깊은 처짐·목주름은 미니 거상을 검토해보세요.",
+    "youtube": {
+      "video_id": "ITtAxPOKv-c",
+      "title": "Mini Vertical Lifting vs Mini Deep-Plane Facelift",
+      "thumbnail_url": "https://img.youtube.com/vi/ITtAxPOKv-c/mqdefault.jpg"
+    },
+    "asked_ago": "3시간 전",
+    "view_count": 201,
+    "prompt_for_chat": "40대인데 실리프팅과 미니 거상 중 어떤 게 더 맞는지 비교해 주세요."
+  },
+  {
+    "id": "trend-6",
+    "area_tag": "지방흡입",
+    "question_summary": "복부·팔뚝 동시 시술, 회복 기간은 얼마나 걸릴까요?",
+    "answer_preview": "부위 수와 흡입량에 따라 1~2주 일상 복귀, 4~6주 운동 재개가 일반적이랍니다. 압박복 착용 기간을 꼭 지켜주세요.",
+    "youtube": {
+      "video_id": "zlzwyVLi2ew",
+      "title": "지방 하나만, 365mc",
+      "thumbnail_url": "https://img.youtube.com/vi/zlzwyVLi2ew/mqdefault.jpg"
+    },
+    "asked_ago": "5시간 전",
+    "view_count": 189,
+    "prompt_for_chat": "복부와 팔뚝 지방흡입을 같이 하면 회복 기간이 얼마나 걸리나요?"
+  }
+]

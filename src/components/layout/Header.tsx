@@ -12,7 +12,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-surface/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/trend" className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-mint to-lavender">
             <Sparkles className="h-4 w-4 text-white" strokeWidth={2} />
           </div>

@@ -4,8 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAdminTenant } from "@/features/admin/hooks/useAdminTenant";
 import type { Hospital, HospitalVideo } from "@/features/hospitals/types/hospital.types";
-import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
+import { HOSPITAL_CATALOG } from "@/features/hospitals/constants/hospitals";
 import { ADMIN_HEADER } from "@/lib/admin/auth";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,8 @@ interface VideosManagerProps {
 }
 
 export function VideosManager({ adminKey }: VideosManagerProps) {
+  const tenant = useAdminTenant();
+  const hospitalId = tenant.hospitalId;
   const [hospital, setHospital] = useState<Hospital | null>(null);
   const [videos, setVideos] = useState<HospitalVideo[]>([]);
   const [url, setUrl] = useState("");
@@ -30,7 +33,7 @@ export function VideosManager({ adminKey }: VideosManagerProps) {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `/api/admin/videos?hospital_id=${DEFAULT_HOSPITAL_ID}`,
+        `/api/admin/videos?hospital_id=${hospitalId}`,
         { headers: { [ADMIN_HEADER]: adminKey } },
       );
       if (res.status === 401) {
@@ -45,7 +48,7 @@ export function VideosManager({ adminKey }: VideosManagerProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [adminKey]);
+  }, [adminKey, hospitalId]);
 
   useEffect(() => {
     void fetchVideos();
@@ -62,7 +65,7 @@ export function VideosManager({ adminKey }: VideosManagerProps) {
         headers,
         body: JSON.stringify({
           url: url.trim(),
-          hospital_id: DEFAULT_HOSPITAL_ID,
+          hospital_id: hospitalId,
         }),
       });
       const data = await res.json();
@@ -86,7 +89,7 @@ export function VideosManager({ adminKey }: VideosManagerProps) {
       const res = await fetch("/api/admin/videos", {
         method: "DELETE",
         headers,
-        body: JSON.stringify({ id, hospital_id: DEFAULT_HOSPITAL_ID }),
+        body: JSON.stringify({ id, hospital_id: hospitalId }),
       });
       if (!res.ok) throw new Error("delete failed");
       toast.success("영상이 삭제되었습니다.");
@@ -107,14 +110,37 @@ export function VideosManager({ adminKey }: VideosManagerProps) {
             B2B 구독 병원 전용 — 등록된 영상만 AI 상담 RAG에 포함됩니다
           </p>
         </div>
-        <div className="flex gap-2 text-xs">
+        <div className="flex flex-wrap gap-2 text-xs">
           <Link
-            href="/admin/leads"
+            href={`/admin?hospital=${tenant.slug}`}
+            className="rounded-full border border-border px-3 py-1.5 text-muted hover:text-foreground"
+          >
+            ← 대시보드
+          </Link>
+          <Link
+            href={`/admin/leads?hospital=${tenant.slug}`}
             className="rounded-full border border-border px-3 py-1.5 text-muted hover:text-foreground"
           >
             Lead 관리 →
           </Link>
         </div>
+      </div>
+
+      <div className="mb-4 rounded-2xl border border-border bg-surface px-4 py-3">
+        <label className="mb-2 block text-xs font-medium text-muted">병원 (Tenant)</label>
+        <select
+          value={tenant.slug}
+          onChange={(e) => {
+            window.location.href = `/admin/videos?hospital=${e.target.value}`;
+          }}
+          className="w-full rounded-xl border border-border bg-background px-4 py-2 text-sm"
+        >
+          {HOSPITAL_CATALOG.map((h) => (
+            <option key={h.id} value={h.slug}>
+              {h.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div

@@ -118,6 +118,26 @@ export async function deleteHospitalVideo(
   if (error) throw new Error("DB_ERROR");
 }
 
+export async function updateHospitalSubscription(
+  hospitalId: string,
+  isSubscribed: boolean,
+): Promise<Hospital> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("hospitals")
+    .update({ is_subscribed: isSubscribed })
+    .eq("id", hospitalId)
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("[updateHospitalSubscription] error:", error);
+    throw new Error("DB_ERROR");
+  }
+
+  return data as Hospital;
+}
+
 export async function loadSubscribedVideosForRag(
   hospitalId: string = DEFAULT_HOSPITAL_ID,
 ): Promise<HospitalVideo[]> {

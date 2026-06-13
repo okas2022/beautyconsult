@@ -10,16 +10,15 @@ import {
   loadHospitalKnowledgeForRefs,
   loadHospitalRagContext,
 } from "@/lib/knowledge/hospital-rag";
-import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
+import { getTenantHospitalIdFromRequest } from "@/lib/tenant/server";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const message = typeof body?.message === "string" ? body.message.trim() : "";
-    const hospitalId =
-      typeof body?.hospital_id === "string" && body.hospital_id.trim()
-        ? body.hospital_id.trim()
-        : DEFAULT_HOSPITAL_ID;
+    const bodyHospitalId =
+      typeof body?.hospital_id === "string" ? body.hospital_id : null;
+    const hospitalId = getTenantHospitalIdFromRequest(request, bodyHospitalId);
 
     const history = Array.isArray(body?.history)
       ? body.history

@@ -1,0 +1,45 @@
+{
+  "top_questions": [
+    {
+      "rank": 1,
+      "label": "쌍꺼풀·부종 회복",
+      "count": 1284,
+      "percent": 92,
+      "icon": "eye"
+    },
+    {
+      "rank": 2,
+      "label": "모티바 cc·비용",
+      "count": 967,
+      "percent": 78,
+      "icon": "breast"
+    },
+    {
+      "rank": 3,
+      "label": "여드름·홍조 케어",
+      "count": 843,
+      "percent": 65,
+      "icon": "skin"
+    }
+  ],
+  "popular_simulations": [
+    {
+      "label": "눈 · 자연유착",
+      "procedure": "eyes",
+      "percent": 88,
+      "trend": "up"
+    },
+    {
+      "label": "코 · 콧대·코끝",
+      "procedure": "nose",
+      "percent": 72,
+      "trend": "stable"
+    },
+    {
+      "label": "가슴 · 300cc",
+      "procedure": "breast",
+      "percent": 54,
+      "trend": "new"
+    }
+  ]
+}

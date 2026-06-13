@@ -34,6 +34,27 @@ function tokenize(text: string): string[] {
     .filter((t) => t.length >= 2);
 }
 
+/** 한국어 질문 → 영어 제목/자막 매칭 (해외 병원 채널) */
+function expandQueryForSearch(query: string): string {
+  const expansions: Array<{ pattern: RegExp; terms: string[] }> = [
+    { pattern: /가슴|유방|보형물|모티바|cc|가슴성형|가슴수술/i, terms: ["breast", "mammoplasty", "implant"] },
+    { pattern: /재수술|리비전/i, terms: ["revision", "reoperation"] },
+    { pattern: /코|콧|비중격|매부리|코성형|콧볼/i, terms: ["nose", "nasal", "rhinoplasty", "tip"] },
+    { pattern: /눈|쌍꺼풀|눈매|안검|눈성형|쌍수/i, terms: ["eye", "eyelid", "ptosis", "blepharoplasty"] },
+    { pattern: /리프팅|처짐|탄력|주름/i, terms: ["lifting", "facelift", "sagging", "wrinkle"] },
+    { pattern: /윤곽|사각턱|턱|지방흡입/i, terms: ["contouring", "jaw", "facial", "chin"] },
+    { pattern: /피부|보톡스|필러|리쥬란|스킨/i, terms: ["skin", "filler", "booster", "rejuran"] },
+    { pattern: /자외선|선크림|spf/i, terms: ["sunscreen", "spf", "sun"] },
+    { pattern: /남자|남성|남성형/i, terms: ["men", "male"] },
+  ];
+
+  let expanded = query;
+  for (const { pattern, terms } of expansions) {
+    if (pattern.test(query)) expanded += ` ${terms.join(" ")}`;
+  }
+  return expanded;
+}
+
 function scoreSegment(text: string, queryTokens: Set<string>, rawQuery: string): number {
   const lower = text.toLowerCase();
   const compact = rawQuery.replace(/\s+/g, "").toLowerCase();
@@ -54,12 +75,15 @@ export function searchHospitalKnowledge(
 ): VideoKnowledge[] {
   if (!videos.length || !query.trim()) return videos.slice(0, 3);
 
-  const queryTokens = new Set(tokenize(query));
+  const expandedQuery = expandQueryForSearch(query);
+  const queryTokens = new Set(tokenize(expandedQuery));
   const ranked: Array<{ video: VideoKnowledge; score: number }> = [];
 
   for (const video of videos) {
+    const titleScore = scoreSegment(video.title, queryTokens, expandedQuery) * 2;
     for (const script of video.scripts) {
-      const score = scoreSegment(script.text, queryTokens, query);
+      const score =
+        scoreSegment(script.text, queryTokens, expandedQuery) + titleScore;
       if (score <= 0) continue;
       ranked.push({
         video: { ...video, scripts: [script] },

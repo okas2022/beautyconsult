@@ -2,12 +2,17 @@ import type { VideoKnowledge } from "@/lib/knowledge/types";
 import type { HospitalVideo } from "@/features/hospitals/types/hospital.types";
 import {
   formatKnowledgeAsContext,
-  loadVideosKnowledge,
 } from "@/lib/knowledge/load-videos-knowledge";
 import {
   isHospitalSubscribed,
   loadSubscribedVideosForRag,
 } from "@/lib/hospitals/hospital-video-service";
+import {
+  getHospitalCatalogEntry,
+} from "@/features/hospitals/constants/hospitals";
+import {
+  loadFileKnowledgeForHospital,
+} from "@/lib/knowledge/hospital-knowledge-files";
 import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
 
 function hospitalVideosToKnowledge(videos: HospitalVideo[]): VideoKnowledge[] {
@@ -90,6 +95,7 @@ export async function loadHospitalRagContext(
   query: string,
   hospitalId: string = DEFAULT_HOSPITAL_ID,
 ): Promise<HospitalRagResult> {
+  const catalog = getHospitalCatalogEntry(hospitalId);
   const subscribed = await isHospitalSubscribed(hospitalId);
 
   if (!subscribed) {
@@ -114,7 +120,16 @@ export async function loadHospitalRagContext(
     };
   }
 
-  const fileKnowledge = await loadVideosKnowledge();
+  const fileKnowledge = await loadFileKnowledgeForHospital(hospitalId);
+  if (!fileKnowledge.length) {
+    return {
+      context: `(등록된 ${catalog?.name ?? "병원"} 유튜브 데이터 없음)`,
+      videos: [],
+      source: "none",
+      subscribed: true,
+    };
+  }
+
   const relevant = searchHospitalKnowledge(fileKnowledge, query);
   return {
     context: formatKnowledgeAsContext(relevant),
@@ -133,5 +148,5 @@ export async function loadHospitalKnowledgeForRefs(
   const dbKnowledge = hospitalVideosToKnowledge(hospitalVideos);
   if (dbKnowledge.length) return dbKnowledge;
 
-  return loadVideosKnowledge();
+  return loadFileKnowledgeForHospital(hospitalId);
 }

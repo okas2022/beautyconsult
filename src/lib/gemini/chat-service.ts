@@ -1,11 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 import { loadHospitalRagContext } from "@/lib/knowledge/hospital-rag";
 import { detectSymptomsFromText } from "@/lib/commerce/product-catalog";
+import { getHospitalCatalogEntry } from "@/features/hospitals/constants/hospitals";
 import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
 
 const COMMERCE_SYMPTOMS = ["건조", "홍조", "여드름", "흉터"] as const;
 
-const SYSTEM_INSTRUCTION = `당신은 성형외과/피부과의 신뢰감 있는 AI 전문 상담 실장입니다.
+const SYSTEM_INSTRUCTION = (hospitalName: string) => `당신은 ${hospitalName}의 신뢰감 있는 AI 전문 상담 실장입니다.
 제공되는 [유튜브 대본 데이터]만을 완벽히 숙지하고 이를 기반으로 환자에게 설명하세요.
 데이터에 없는 의학적 수술법이나 수치는 절대 허구로 지어내지 마십시오(환각 제한).
 말투는 환자의 고민에 깊이 공감하되 지식을 전달할 때는 명확하게 어미를 '~해보세요', '~랍니다'로 부드럽게 맺으십시오.
@@ -142,6 +143,7 @@ async function generateWithModel(
   client: GoogleGenAI,
   model: string,
   userPrompt: string,
+  hospitalName: string,
 ): Promise<GenerateChatReplyResult> {
   const response = await client.models.generateContent({
     model,
@@ -150,7 +152,7 @@ async function generateWithModel(
       temperature: TEMPERATURE,
       topP: 0.85,
       maxOutputTokens: 1024,
-      systemInstruction: SYSTEM_INSTRUCTION,
+      systemInstruction: SYSTEM_INSTRUCTION(hospitalName),
       responseMimeType: "application/json",
       responseSchema: {
         type: "object",
@@ -188,6 +190,8 @@ export async function generateChatReply(
   input: GenerateChatReplyInput,
 ): Promise<GenerateChatReplyResult> {
   const hospitalId = input.hospitalId ?? DEFAULT_HOSPITAL_ID;
+  const hospitalName =
+    getHospitalCatalogEntry(hospitalId)?.name ?? "제휴 성형외과";
   const rag = await loadHospitalRagContext(input.message, hospitalId);
   const userPrompt = buildUserPrompt(rag.context, input.message, input.history);
 
@@ -198,7 +202,7 @@ export async function generateChatReply(
 
   for (const model of MODEL_CANDIDATES) {
     try {
-      return await generateWithModel(client, model, userPrompt);
+      return await generateWithModel(client, model, userPrompt, hospitalName);
     } catch (error) {
       console.warn(`[chat-service] model ${model} failed:`, error);
     }

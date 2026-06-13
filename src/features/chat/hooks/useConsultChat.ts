@@ -3,13 +3,14 @@
 import { useCallback } from "react";
 import { useChatStore } from "@/features/chat/store/chatStore";
 import type { ChatApiResponse } from "@/features/chat/types/chat.types";
-import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
+import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
 
 export function useConsultChat() {
   const addMessage = useChatStore((s) => s.addMessage);
   const setIsTyping = useChatStore((s) => s.setIsTyping);
   const getHistoryForApi = useChatStore((s) => s.getHistoryForApi);
   const isTyping = useChatStore((s) => s.isTyping);
+  const hospitalId = useHospitalStore((s) => s.selectedHospitalId);
 
   const sendMessage = useCallback(
     async (userText: string) => {
@@ -26,7 +27,7 @@ export function useConsultChat() {
           body: JSON.stringify({
             message: trimmed,
             history: getHistoryForApi().slice(0, -1),
-            hospital_id: DEFAULT_HOSPITAL_ID,
+            hospital_id: hospitalId,
           }),
         });
 
@@ -56,7 +57,7 @@ export function useConsultChat() {
         setIsTyping(false);
       }
     },
-    [addMessage, getHistoryForApi, isTyping, setIsTyping],
+    [addMessage, getHistoryForApi, hospitalId, isTyping, setIsTyping],
   );
 
   return { sendMessage, isTyping };

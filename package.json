@@ -11,7 +11,8 @@
     "youtube:index": "node scripts/youtube/index_vectors.mjs",
     "youtube:full": "python3 scripts/youtube/fetch_channel_videos.py && npm run youtube:sync && npm run youtube:index",
     "db:leads": "node scripts/apply-leads-migration.mjs",
-    "db:migrate": "node scripts/apply-migrations.mjs"
+    "db:migrate": "node scripts/apply-migrations.mjs",
+    "youtube:id-hospital": "node scripts/youtube/build-hospital-knowledge.mjs --channel \"https://www.youtube.com/@IDhospital/videos\" --out data/hospitals/id-hospital/videos_knowledge.json --max 12"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",

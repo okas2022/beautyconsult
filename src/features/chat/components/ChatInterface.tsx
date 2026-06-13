@@ -9,6 +9,8 @@ import { useConsultChat } from "@/features/chat/hooks/useConsultChat";
 import { useChatStore } from "@/features/chat/store/chatStore";
 import { LeadBookingModal } from "@/features/leads/components/LeadBookingModal";
 import { useLeadModalStore } from "@/features/leads/store/leadModalStore";
+import { HospitalSelector } from "@/features/hospitals/components/HospitalSelector";
+import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
 
 function TypingIndicator() {
   return (
@@ -46,6 +48,7 @@ export function ChatInterface() {
   const isTyping = useChatStore((s) => s.isTyping);
   const { sendMessage } = useConsultChat();
   const openLeadModal = useLeadModalStore((s) => s.open);
+  const selectedHospital = useHospitalStore((s) => s.getSelectedHospital());
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const hasConversation = messages.filter((m) => m.id !== "welcome").length > 0;
@@ -59,12 +62,12 @@ export function ChatInterface() {
   const handleQuickAction = useCallback(
     (action: string) => {
       if (action.includes("예약") || action.includes("상담")) {
-        openLeadModal();
+        openLeadModal({ hospitalId: selectedHospital.id });
         return;
       }
       void sendMessage(action);
     },
-    [openLeadModal, sendMessage],
+    [openLeadModal, selectedHospital.id, sendMessage],
   );
 
   return (
@@ -72,9 +75,13 @@ export function ChatInterface() {
       <div className="flex shrink-0 items-center justify-center gap-1.5 border-b border-border/60 bg-mint/5 px-4 py-2">
         <ShieldCheck className="h-3.5 w-3.5 text-mint-dark" strokeWidth={2} />
         <p className="text-[11px] text-muted">
-          <span className="font-medium text-mint-dark">검증된 전문의</span> 유튜브
-          대본 기반 AI 상담 — 원장님 답변 구간 재생
+          <span className="font-medium text-mint-dark">{selectedHospital.name}</span>{" "}
+          유튜브 대본 기반 AI 상담 — 원장님 답변 구간 재생
         </p>
+      </div>
+
+      <div className="shrink-0 border-b border-border/60 bg-surface px-4 py-3">
+        <HospitalSelector />
       </div>
 
       <div
@@ -98,7 +105,7 @@ export function ChatInterface() {
         <div className="shrink-0 border-t border-border/60 bg-surface px-4 py-2.5">
           <button
             type="button"
-            onClick={() => openLeadModal()}
+            onClick={() => openLeadModal({ hospitalId: selectedHospital.id })}
             className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 rounded-xl border border-mint/30 bg-mint/5 py-2.5 text-xs font-semibold text-mint-dark transition hover:bg-mint/10 active:scale-[0.99]"
           >
             <CalendarCheck className="h-4 w-4" />
@@ -109,7 +116,7 @@ export function ChatInterface() {
         <div className="shrink-0 border-t border-border/60 bg-surface px-4 py-2">
           <button
             type="button"
-            onClick={() => openLeadModal()}
+            onClick={() => openLeadModal({ hospitalId: selectedHospital.id })}
             className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 rounded-xl border border-dashed border-mint/25 py-2 text-[11px] font-medium text-muted transition hover:border-mint/40 hover:text-mint-dark"
           >
             <CalendarCheck className="h-3.5 w-3.5" />

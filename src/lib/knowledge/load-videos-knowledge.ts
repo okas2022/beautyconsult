@@ -5,16 +5,25 @@ import type { VideoKnowledge } from "@/lib/knowledge/types";
 let cachedKnowledge: VideoKnowledge[] | null = null;
 let cachedPath: string | null = null;
 
-/** 멀티 테넌트 확장: tenantId별 knowledge 파일 경로 분리 가능 */
-export function resolveKnowledgePath(tenantId?: string): string {
+/** 멀티 테넌트 / 병원별 knowledge 파일 경로 */
+export function resolveKnowledgePath(
+  tenantId?: string,
+  relativePath?: string,
+): string {
+  if (relativePath) {
+    return path.join(process.cwd(), relativePath);
+  }
   if (tenantId) {
     return path.join(process.cwd(), "data", "tenants", tenantId, "videos_knowledge.json");
   }
   return path.join(process.cwd(), "videos_knowledge.json");
 }
 
-export async function loadVideosKnowledge(tenantId?: string): Promise<VideoKnowledge[]> {
-  const filePath = resolveKnowledgePath(tenantId);
+export async function loadVideosKnowledge(
+  tenantId?: string,
+  relativePath?: string,
+): Promise<VideoKnowledge[]> {
+  const filePath = resolveKnowledgePath(tenantId, relativePath);
 
   if (cachedKnowledge && cachedPath === filePath) {
     return cachedKnowledge;
@@ -34,7 +43,7 @@ export async function loadVideosKnowledge(tenantId?: string): Promise<VideoKnowl
     cachedPath = filePath;
     return cachedKnowledge;
   } catch (error) {
-    console.error("[load-videos-knowledge] failed:", error);
+    console.error("[load-videos-knowledge] failed:", filePath, error);
     return [];
   }
 }

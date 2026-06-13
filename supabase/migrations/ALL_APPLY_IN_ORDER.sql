@@ -83,3 +83,14 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
   CREATE POLICY "Service role only users" ON users FOR ALL USING (false) WITH CHECK (false);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ========== 20250613000003_id_hospital_seed.sql ==========
+INSERT INTO hospitals (id, name, is_subscribed)
+VALUES (
+  '00000000-0000-0000-0000-000000000002',
+  '아이디병원',
+  true
+)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  is_subscribed = EXCLUDED.is_subscribed;

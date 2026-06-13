@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CalendarCheck, Clock, ExternalLink, Play } from "lucide-react";
 import type { YoutubeVideoRef } from "@/features/chat/types/chat.types";
 import { useLeadModalStore } from "@/features/leads/store/leadModalStore";
+import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
 import { cn } from "@/lib/utils";
 
 interface YouTubeCardProps {
@@ -19,6 +20,7 @@ export function YouTubeCard({
   showBookingButton = true,
 }: YouTubeCardProps) {
   const openLeadModal = useLeadModalStore((s) => s.open);
+  const hospitalId = useHospitalStore((s) => s.selectedHospitalId);
   const isShort = reference.content_type === "short";
   const thumbnailUrl = `https://img.youtube.com/vi/${reference.video_id}/hqdefault.jpg`;
 
@@ -31,6 +33,7 @@ export function YouTubeCard({
     openLeadModal({
       videoId: reference.video_id,
       videoTitle: reference.title,
+      hospitalId,
     });
   };
 

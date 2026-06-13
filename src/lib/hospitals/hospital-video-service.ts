@@ -1,5 +1,9 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
+import {
+  getHospitalCatalogEntry,
+} from "@/features/hospitals/constants/hospitals";
+import { hospitalKnowledgeFileExists } from "@/lib/knowledge/hospital-knowledge-files";
 import type {
   Hospital,
   HospitalVideo,
@@ -28,8 +32,19 @@ export async function getHospital(hospitalId: string): Promise<Hospital | null> 
 }
 
 export async function isHospitalSubscribed(hospitalId: string): Promise<boolean> {
-  const hospital = await getHospital(hospitalId);
-  return Boolean(hospital?.is_subscribed);
+  try {
+    const hospital = await getHospital(hospitalId);
+    if (hospital) return Boolean(hospital.is_subscribed);
+  } catch {
+    /* DB unavailable — fall through */
+  }
+
+  const catalog = getHospitalCatalogEntry(hospitalId);
+  if (catalog?.isSubscribed && hospitalKnowledgeFileExists(hospitalId)) {
+    return true;
+  }
+
+  return Boolean(catalog?.isSubscribed);
 }
 
 export async function listHospitalVideos(

@@ -1,65 +1,86 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Shield, Sparkles, Video } from "lucide-react";
 
-export default function Home() {
+const FEATURES = [
+  {
+    icon: Shield,
+    title: "검증된 근거",
+    description: "전문의 유튜브 영상만을 RAG 데이터로 활용",
+  },
+  {
+    icon: Video,
+    title: "영상 기반 답변",
+    description: "답변마다 관련 영상 카드로 출처 확인",
+  },
+  {
+    icon: Sparkles,
+    title: "AI 실장 상담",
+    description: "24시간 언제든 피부·성형 고민 상담",
+  },
+] as const;
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="mx-auto flex w-full max-w-lg flex-col px-4 pt-8 md:pt-16">
+      {/* Hero */}
+      <section className="mb-12 text-center">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/5 px-4 py-1.5">
+          <Sparkles className="h-3.5 w-3.5 text-mint-dark" />
+          <span className="text-xs font-medium text-mint-dark">
+            차세대 신뢰 기반 AI 컨시어지
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <h1 className="mb-4 text-[2rem] font-semibold leading-tight tracking-tight text-foreground">
+          가짜 후기 없이,
+          <br />
+          <span className="bg-gradient-to-r from-mint-dark to-lavender bg-clip-text text-transparent">
+            전문의 근거
+          </span>
+          로 답합니다
+        </h1>
+
+        <p className="mx-auto mb-8 max-w-xs text-[15px] leading-relaxed text-muted">
+          PreFit AI 실장이 검증된 전문의 유튜브 데이터만을 바탕으로
+          객관적인 피부·성형 상담을 제공합니다.
+        </p>
+
+        <Link
+          href="/chat"
+          className="inline-flex h-12 items-center gap-2 rounded-full bg-foreground px-8 text-sm font-semibold text-white shadow-lg transition-all hover:bg-foreground/90 active:scale-[0.97]"
+        >
+          무료 AI 상담 시작
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </section>
+
+      {/* Features */}
+      <section className="mb-8 flex flex-col gap-3">
+        {FEATURES.map(({ icon: Icon, title, description }) => (
+          <div
+            key={title}
+            className="flex items-start gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-mint/10">
+              <Icon className="h-5 w-5 text-mint-dark" strokeWidth={1.75} />
+            </div>
+            <div>
+              <h3 className="mb-0.5 text-sm font-semibold text-foreground">
+                {title}
+              </h3>
+              <p className="text-xs leading-relaxed text-muted">{description}</p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* Coming soon badge */}
+      <div className="mb-8 rounded-2xl border border-dashed border-lavender/40 bg-lavender/5 p-5 text-center">
+        <p className="mb-1 text-xs font-semibold text-lavender">Coming Soon</p>
+        <p className="text-sm text-muted">
+          Stable Diffusion 기반 3D 가상 성형 시뮬레이션
+        </p>
+      </div>
     </div>
   );
 }

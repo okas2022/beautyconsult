@@ -12,7 +12,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const isChat = pathname.startsWith("/chat");
+  const isFullHeight = pathname.startsWith("/chat") || pathname.startsWith("/simulate");
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
@@ -21,7 +21,7 @@ export function AppShell({ children }: AppShellProps) {
       <main
         className={cn(
           "flex flex-1 flex-col",
-          isChat
+          isFullHeight
             ? "overflow-hidden pb-0"
             : "pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0",
         )}
@@ -29,7 +29,7 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
 
-      {!isChat && <Footer />}
+      {!isFullHeight && <Footer />}
       <MobileNav />
     </div>
   );

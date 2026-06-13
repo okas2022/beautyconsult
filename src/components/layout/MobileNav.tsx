@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MessageCircle, User } from "lucide-react";
+import { Home, MessageCircle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", label: "홈", icon: Home },
   { href: "/chat", label: "상담", icon: MessageCircle },
-  { href: "#", label: "마이", icon: User },
+  { href: "/simulate", label: "시뮬", icon: Sparkles },
 ] as const;
 
 export function MobileNav() {
@@ -21,7 +21,7 @@ export function MobileNav() {
           const isActive =
             href === "/"
               ? pathname === "/"
-              : pathname.startsWith(href) && href !== "#";
+              : pathname.startsWith(href);
 
           return (
             <Link

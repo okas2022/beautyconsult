@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { Toaster } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import "./globals.css";
 
@@ -39,6 +40,14 @@ export default function RootLayout({
     <html lang="ko" className={`${geistSans.variable} h-full`}>
       <body className="min-h-full antialiased">
         <AppShell>{children}</AppShell>
+        <Toaster
+          position="top-center"
+          richColors
+          closeButton
+          toastOptions={{
+            className: "text-sm",
+          }}
+        />
       </body>
     </html>
   );

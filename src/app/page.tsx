@@ -74,13 +74,19 @@ export default function HomePage() {
         ))}
       </section>
 
-      {/* Coming soon badge */}
-      <div className="mb-8 rounded-2xl border border-dashed border-lavender/40 bg-lavender/5 p-5 text-center">
-        <p className="mb-1 text-xs font-semibold text-lavender">Coming Soon</p>
-        <p className="text-sm text-muted">
-          Stable Diffusion 기반 3D 가상 성형 시뮬레이션
+      {/* Simulator CTA */}
+      <Link
+        href="/simulate"
+        className="mb-8 block rounded-2xl border border-mint/30 bg-gradient-to-br from-mint/10 to-lavender/10 p-5 text-center transition hover:shadow-md"
+      >
+        <p className="mb-1 text-xs font-semibold text-mint-dark">New</p>
+        <p className="text-sm font-medium text-foreground">
+          가상 성형 시뮬레이터
         </p>
-      </div>
+        <p className="mt-1 text-xs text-muted">
+          Stable Diffusion 인페인팅 · 비포/애프터 슬라이더
+        </p>
+      </Link>
     </div>
   );
 }

@@ -8,8 +8,21 @@
 - **State**: Zustand
 - **Animation**: Framer Motion
 - **Icons**: Lucide React
-- **Backend/DB**: Supabase
+- **AI/RAG**: Google Gemini + YouTube 자막 하이브리드 검색 (벡터 + 키워드)
+- **Backend/DB**: Supabase (선택 pgvector)
 - **Deploy**: Vercel (GitHub 연동 자동 배포)
+
+## 핵심 기능: YouTube RAG 상담
+
+질문 → 자막 청크 검색 → AI 답변 + **해당 타임스탬프 YouTube 재생**
+
+```
+src/lib/youtube-rag.ts          # 하이브리드 RAG 검색
+src/lib/consult-gemini.ts       # Gemini 답변 생성
+src/app/api/consult/chat/       # 채팅 API
+data/youtube/videos_chunks.json # 편집된 자막 청크 (타임스탬프 포함)
+scripts/youtube/                # 자막 추출·편집·인덱싱 파이프라인
+```
 
 ## 프로젝트 구조
 
@@ -52,6 +65,7 @@ http://localhost:3000 에서 확인
 |-----|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://pqqhqkqovxvusxktcuce.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Publishable Key |
+| `GEMINI_API_KEY` | Google AI Studio API Key (답변 + 벡터 검색) |
 
 5. **Deploy** 클릭
 

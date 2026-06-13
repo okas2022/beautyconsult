@@ -4,38 +4,23 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImagePlus, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { useChatStore } from "@/features/chat/store/chatStore";
+import { useConsultChat } from "@/features/chat/hooks/useConsultChat";
 import { cn } from "@/lib/utils";
 
 export function ChatInput() {
   const [input, setInput] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const addMessage = useChatStore((s) => s.addMessage);
-  const setIsTyping = useChatStore((s) => s.setIsTyping);
+  const { sendMessage, isTyping } = useConsultChat();
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed && !preview) return;
 
-    addMessage({
-      role: "user",
-      content: trimmed || "사진을 첨부했습니다.",
-    });
-
+    const userContent = trimmed || "사진을 첨부했습니다.";
     setInput("");
     setPreview(null);
-    setIsTyping(true);
-
-    // Mock AI response — will be replaced with RAG pipeline
-    setTimeout(() => {
-      setIsTyping(false);
-      addMessage({
-        role: "assistant",
-        content:
-          "말씀해 주신 내용을 검토 중입니다. 관련 전문의 영상을 찾아 근거와 함께 답변드리겠습니다.",
-      });
-    }, 1500);
+    await sendMessage(userContent);
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +34,7 @@ export function ChatInput() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   };
 
@@ -108,11 +93,12 @@ export function ChatInput() {
             onKeyDown={handleKeyDown}
             placeholder="피부·성형 고민을 입력하세요..."
             rows={1}
+            disabled={isTyping}
             className={cn(
               "w-full resize-none rounded-2xl border border-border bg-background px-4 py-2.5",
               "text-[15px] leading-snug text-foreground placeholder:text-muted/60",
               "focus:border-mint/50 focus:outline-none focus:ring-2 focus:ring-mint/20",
-              "max-h-32 transition-all duration-200",
+              "max-h-32 transition-all duration-200 disabled:opacity-50",
             )}
             style={{
               minHeight: "42px",
@@ -124,8 +110,8 @@ export function ChatInput() {
         <Button
           variant="primary"
           size="sm"
-          onClick={handleSend}
-          disabled={!input.trim() && !preview}
+          onClick={() => void handleSend()}
+          disabled={(!input.trim() && !preview) || isTyping}
           aria-label="메시지 전송"
           className="mb-0.5 shrink-0"
         >

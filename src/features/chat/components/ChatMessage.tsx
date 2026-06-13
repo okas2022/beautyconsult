@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/Avatar";
+import { MessageContent } from "@/features/chat/components/MessageContent";
 import { YouTubeCard } from "@/features/chat/components/YouTubeCard";
 import type { ChatMessage } from "@/features/chat/types/chat.types";
 import { cn } from "@/lib/utils";
@@ -9,9 +10,14 @@ import { cn } from "@/lib/utils";
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   index: number;
+  onQuickAction?: (action: string) => void;
 }
 
-export function ChatMessageBubble({ message, index }: ChatMessageBubbleProps) {
+export function ChatMessageBubble({
+  message,
+  index,
+  onQuickAction,
+}: ChatMessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (
@@ -50,12 +56,32 @@ export function ChatMessageBubble({ message, index }: ChatMessageBubbleProps) {
               : "rounded-tl-md bg-surface border border-border text-foreground shadow-sm",
           )}
         >
-          <p className="whitespace-pre-wrap">{message.content}</p>
+          <MessageContent content={message.content} />
         </div>
 
-        {message.youtubeRef && (
-          <div className="w-full max-w-sm">
-            <YouTubeCard reference={message.youtubeRef} />
+        {message.videoRefs && message.videoRefs.length > 0 && (
+          <div className="w-full max-w-sm space-y-2">
+            {message.videoRefs.map((ref) => (
+              <YouTubeCard
+                key={`${ref.video_id}-${ref.start_seconds}`}
+                reference={ref}
+              />
+            ))}
+          </div>
+        )}
+
+        {message.nextActions && message.nextActions.length > 0 && !isUser && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {message.nextActions.map((action) => (
+              <button
+                key={action}
+                type="button"
+                onClick={() => onQuickAction?.(action)}
+                className="rounded-full border border-border bg-background px-3 py-1 text-[11px] font-medium text-muted transition-colors hover:border-mint/40 hover:text-mint-dark"
+              >
+                {action}
+              </button>
+            ))}
           </div>
         )}
 

@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractVideoRefsFromText } from "@/lib/chat/parse-youtube-links";
+import { matchProductsBySymptoms } from "@/lib/commerce/product-catalog";
 import { generateChatReply } from "@/lib/gemini/chat-service";
-import { loadVideosKnowledge } from "@/lib/knowledge/load-videos-knowledge";
+import { loadHospitalKnowledgeForRefs } from "@/lib/knowledge/hospital-rag";
+import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const message = typeof body?.message === "string" ? body.message.trim() : "";
-    const tenantId =
-      typeof body?.tenantId === "string" ? body.tenantId.trim() : undefined;
+    const hospitalId =
+      typeof body?.hospital_id === "string" && body.hospital_id.trim()
+        ? body.hospital_id.trim()
+        : DEFAULT_HOSPITAL_ID;
 
     const history = Array.isArray(body?.history)
       ? body.history
@@ -34,15 +38,21 @@ export async function POST(request: NextRequest) {
     }
 
     const [result, knowledge] = await Promise.all([
-      generateChatReply({ message, history, tenantId }),
-      loadVideosKnowledge(tenantId),
+      generateChatReply({ message, history, hospitalId }),
+      loadHospitalKnowledgeForRefs(hospitalId),
     ]);
 
     const videoRefs = extractVideoRefsFromText(result.reply, knowledge);
+    const products = matchProductsBySymptoms(result.symptomKeywords);
 
     return NextResponse.json({
       reply: result.reply,
       videoRefs: videoRefs.length ? videoRefs : undefined,
+      symptomKeywords: result.symptomKeywords.length
+        ? result.symptomKeywords
+        : undefined,
+      products: products.length ? products : undefined,
+      nextActions: ["원장님께 예약 / 상담 신청"],
       model: result.model,
       source: result.source,
     });

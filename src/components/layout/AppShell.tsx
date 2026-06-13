@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { PremiumBootstrap } from "@/features/premium/components/PremiumBootstrap";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {
@@ -16,6 +17,7 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+      <PremiumBootstrap />
       <Header />
 
       <main

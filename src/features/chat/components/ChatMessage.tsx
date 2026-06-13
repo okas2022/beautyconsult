@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/Avatar";
 import { MessageContent } from "@/features/chat/components/MessageContent";
+import { ProductCard } from "@/features/commerce/components/ProductCard";
 import { YouTubeCard } from "@/features/chat/components/YouTubeCard";
 import type { ChatMessage } from "@/features/chat/types/chat.types";
 import { cn } from "@/lib/utils";
@@ -59,8 +60,16 @@ export function ChatMessageBubble({
           <MessageContent content={message.content} />
         </div>
 
+        {message.products && message.products.length > 0 && (
+          <div className="mt-2 w-full max-w-sm space-y-2">
+            {message.products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+
         {message.videoRefs && message.videoRefs.length > 0 && (
-          <div className="w-full max-w-sm space-y-2">
+          <div className="mt-2 w-full max-w-sm space-y-2">
             {message.videoRefs.map((ref) => (
               <YouTubeCard
                 key={`${ref.video_id}-${ref.start_seconds}`}

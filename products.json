@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "name": "시카 수분 크림",
+    "target_symptom": ["건조", "홍조", "민감"],
+    "url": "https://example.com/products/cica-cream",
+    "image_url": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop",
+    "description": "시카 성분으로 건조하고 예민한 피부에 수분 장벽을 채워줍니다."
+  },
+  {
+    "id": "2",
+    "name": "AC 클리어 토너",
+    "target_symptom": ["여드름", "지성", "모공"],
+    "url": "https://example.com/products/ac-toner",
+    "image_url": "https://images.unsplash.com/photo-1570194065650-d99fb4b3cce2?w=400&h=400&fit=crop",
+    "description": "과다 피지와 트러블 케어에 도움을 주는 저자극 토너입니다."
+  },
+  {
+    "id": "3",
+    "name": "PDRN 재생 앰플",
+    "target_symptom": ["흉터", "색소침착", "탄력"],
+    "url": "https://example.com/products/pdrn-ampoule",
+    "image_url": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop",
+    "description": "피부 재생과 흉터·잡티 완화에 도움을 주는 고농축 앰플입니다."
+  },
+  {
+    "id": "4",
+    "name": "레드ness 쿨링 마스크",
+    "target_symptom": ["홍조", "민감", "열감"],
+    "url": "https://example.com/products/cooling-mask",
+    "image_url": "https://images.unsplash.com/photo-1596755389378-c174d84f8c68?w=400&h=400&fit=crop",
+    "description": "붉은기와 열감을 진정시키는 쿨링 시트 마스크입니다."
+  },
+  {
+    "id": "5",
+    "name": "히알루론 수분 부스터",
+    "target_symptom": ["건조", "각질", "당김"],
+    "url": "https://example.com/products/hyaluronic-booster",
+    "image_url": "https://images.unsplash.com/photo-1608248543803-ba4f4c4aeafb?w=400&h=400&fit=crop",
+    "description": "속건조와 각질 부각을 완화하는 고보습 부스터입니다."
+  },
+  {
+    "id": "6",
+    "name": "LED 피부 케어 디바이스",
+    "target_symptom": ["여드름", "홍조", "탄력"],
+    "url": "https://example.com/products/led-device",
+    "image_url": "https://images.unsplash.com/photo-1515377901643-4a9748a5d2ab?w=400&h=400&fit=crop",
+    "description": "홈케어 LED로 트러블·홍조·탄력 고민을 집에서 관리합니다."
+  }
+]

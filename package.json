@@ -9,7 +9,9 @@
     "lint": "eslint",
     "youtube:sync": "python3 scripts/youtube/extract_transcripts.py && python3 scripts/youtube/fetch_titles.py && python3 scripts/youtube/build_chunks.py",
     "youtube:index": "node scripts/youtube/index_vectors.mjs",
-    "youtube:full": "python3 scripts/youtube/fetch_channel_videos.py && npm run youtube:sync && npm run youtube:index"
+    "youtube:full": "python3 scripts/youtube/fetch_channel_videos.py && npm run youtube:sync && npm run youtube:index",
+    "db:leads": "node scripts/apply-leads-migration.mjs",
+    "db:migrate": "node scripts/apply-migrations.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",
@@ -28,6 +30,7 @@
     "sharp": "^0.35.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
+    "youtube-transcript": "^1.3.1",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

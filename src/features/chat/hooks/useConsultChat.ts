@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { useChatStore } from "@/features/chat/store/chatStore";
 import type { ChatApiResponse } from "@/features/chat/types/chat.types";
+import { DEFAULT_HOSPITAL_ID } from "@/features/leads/types/lead.types";
 
 export function useConsultChat() {
   const addMessage = useChatStore((s) => s.addMessage);
@@ -25,6 +26,7 @@ export function useConsultChat() {
           body: JSON.stringify({
             message: trimmed,
             history: getHistoryForApi().slice(0, -1),
+            hospital_id: DEFAULT_HOSPITAL_ID,
           }),
         });
 
@@ -38,6 +40,9 @@ export function useConsultChat() {
           role: "assistant",
           content: data.reply,
           videoRefs: data.videoRefs,
+          symptomKeywords: data.symptomKeywords,
+          products: data.products,
+          nextActions: data.nextActions,
         });
         return true;
       } catch {

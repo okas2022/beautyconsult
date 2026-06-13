@@ -1,3 +1,5 @@
+import type { Product } from "@/features/commerce/types/product.types";
+
 export type MessageRole = "user" | "assistant";
 
 export type YoutubeContentType = "video" | "short";
@@ -20,6 +22,8 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   videoRefs?: YoutubeVideoRef[];
+  symptomKeywords?: string[];
+  products?: Product[];
   nextActions?: string[];
 }
 
@@ -32,6 +36,9 @@ export interface ChatApiRequest {
 export interface ChatApiResponse {
   reply: string;
   videoRefs?: YoutubeVideoRef[];
+  symptomKeywords?: string[];
+  products?: Product[];
+  nextActions?: string[];
   model?: string;
   source?: "gemini" | "fallback";
   error?: string;

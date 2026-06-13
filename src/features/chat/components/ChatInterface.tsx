@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck } from "lucide-react";
+import { CalendarCheck, ShieldCheck } from "lucide-react";
 import { ChatInput } from "@/features/chat/components/ChatInput";
 import { ChatMessageBubble } from "@/features/chat/components/ChatMessage";
 import { useConsultChat } from "@/features/chat/hooks/useConsultChat";
 import { useChatStore } from "@/features/chat/store/chatStore";
+import { LeadBookingModal } from "@/features/leads/components/LeadBookingModal";
+import { useLeadModalStore } from "@/features/leads/store/leadModalStore";
 
 function TypingIndicator() {
   return (
@@ -43,7 +45,10 @@ export function ChatInterface() {
   const messages = useChatStore((s) => s.messages);
   const isTyping = useChatStore((s) => s.isTyping);
   const { sendMessage } = useConsultChat();
+  const openLeadModal = useLeadModalStore((s) => s.open);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const hasConversation = messages.filter((m) => m.id !== "welcome").length > 0;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -53,9 +58,13 @@ export function ChatInterface() {
 
   const handleQuickAction = useCallback(
     (action: string) => {
+      if (action.includes("예약") || action.includes("상담")) {
+        openLeadModal();
+        return;
+      }
       void sendMessage(action);
     },
-    [sendMessage],
+    [openLeadModal, sendMessage],
   );
 
   return (
@@ -85,9 +94,35 @@ export function ChatInterface() {
         </div>
       </div>
 
+      {hasConversation ? (
+        <div className="shrink-0 border-t border-border/60 bg-surface px-4 py-2.5">
+          <button
+            type="button"
+            onClick={() => openLeadModal()}
+            className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 rounded-xl border border-mint/30 bg-mint/5 py-2.5 text-xs font-semibold text-mint-dark transition hover:bg-mint/10 active:scale-[0.99]"
+          >
+            <CalendarCheck className="h-4 w-4" />
+            원장님께 바로 예약 / 상담 신청하기
+          </button>
+        </div>
+      ) : (
+        <div className="shrink-0 border-t border-border/60 bg-surface px-4 py-2">
+          <button
+            type="button"
+            onClick={() => openLeadModal()}
+            className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 rounded-xl border border-dashed border-mint/25 py-2 text-[11px] font-medium text-muted transition hover:border-mint/40 hover:text-mint-dark"
+          >
+            <CalendarCheck className="h-3.5 w-3.5" />
+            상담 후 병원 예약도 도와드립니다
+          </button>
+        </div>
+      )}
+
       <div className="shrink-0">
         <ChatInput />
       </div>
+
+      <LeadBookingModal />
     </div>
   );
 }

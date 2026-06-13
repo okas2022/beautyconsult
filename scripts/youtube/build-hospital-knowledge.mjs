@@ -20,11 +20,13 @@ function parseArgs() {
     channel: "https://www.youtube.com/@IDhospital/videos",
     out: "data/hospitals/id-hospital/videos_knowledge.json",
     max: 12,
+    name: "병원",
   };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--channel") opts.channel = args[++i];
     else if (args[i] === "--out") opts.out = args[++i];
     else if (args[i] === "--max") opts.max = Number(args[++i]);
+    else if (args[i] === "--name") opts.name = args[++i];
   }
   return opts;
 }
@@ -63,7 +65,7 @@ function fetchVideoList(channelUrl, max) {
   return items;
 }
 
-async function fetchTranscripts(videoId, title) {
+async function fetchTranscripts(videoId, title, hospitalName) {
   const langs = ["ko", "en"];
   for (const lang of langs) {
     try {
@@ -100,7 +102,7 @@ async function fetchTranscripts(videoId, title) {
       seconds: 0,
       timestamp: "00:00",
       speaker: "원장",
-      text: `[자동 요약] ${title} — 아이디병원 등록 영상입니다.`,
+      text: `[자동 요약] ${title} — ${hospitalName} 등록 영상입니다.`,
     },
   ];
 }
@@ -124,7 +126,7 @@ async function main() {
   const knowledge = [];
   for (const video of videos) {
     process.stdout.write(`  · ${video.video_id} ${video.title.slice(0, 40)}... `);
-    const scripts = await fetchTranscripts(video.video_id, video.title);
+    const scripts = await fetchTranscripts(video.video_id, video.title, opts.name);
     // 긴 자막은 검색 품질을 위해 구간별로 분할 저장
     const groups = scripts.length > 8 ? chunkScripts(scripts, 5) : [scripts];
     for (const group of groups) {

@@ -27,7 +27,7 @@ export function HospitalSelector({ className, compact }: HospitalSelectorProps) 
           </span>
         </div>
       )}
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {HOSPITAL_CATALOG.map((hospital) => (
           <HospitalChip
             key={hospital.id}
@@ -55,7 +55,7 @@ function HospitalChip({
       type="button"
       onClick={onSelect}
       className={cn(
-        "flex-1 rounded-xl border px-3 py-2 text-left transition active:scale-[0.98]",
+        "min-w-[7.5rem] shrink-0 rounded-xl border px-3 py-2 text-left transition active:scale-[0.98]",
         selected
           ? "border-mint/50 bg-mint/10 shadow-sm"
           : "border-border bg-surface hover:border-mint/30",

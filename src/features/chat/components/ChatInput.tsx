@@ -67,7 +67,7 @@ export function ChatInput() {
         )}
       </AnimatePresence>
 
-      <div className="flex items-end gap-2 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="flex items-end gap-2 px-4 py-3">
         <input
           ref={fileRef}
           type="file"

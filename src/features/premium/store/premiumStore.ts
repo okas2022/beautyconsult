@@ -2,23 +2,36 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { BillingCycle } from "@/features/premium/constants/plans";
+import type { MembershipStatus } from "@/features/premium/types/premium.types";
 import { getPatientId } from "@/features/leads/store/leadModalStore";
 
+const DEFAULT_USAGE: MembershipStatus["usage"] = {
+  simulateUsed: 0,
+  simulateLimit: 1,
+  simulateMonth: "",
+};
+
 interface PremiumState {
-  isPremium: boolean;
+  membership: MembershipStatus | null;
   isLoading: boolean;
-  setPremium: (value: boolean) => void;
+  isPremium: boolean;
   setLoading: (value: boolean) => void;
   refreshStatus: () => Promise<void>;
-  subscribe: () => Promise<boolean>;
+  subscribe: (billingCycle?: BillingCycle) => Promise<boolean>;
+  cancel: () => Promise<boolean>;
+}
+
+function deriveIsPremium(m: MembershipStatus | null): boolean {
+  return Boolean(m?.is_premium);
 }
 
 export const usePremiumStore = create<PremiumState>()(
   persist(
     (set) => ({
-      isPremium: false,
+      membership: null,
       isLoading: false,
-      setPremium: (value) => set({ isPremium: value }),
+      isPremium: false,
       setLoading: (value) => set({ isLoading: value }),
 
       refreshStatus: async () => {
@@ -28,8 +41,9 @@ export const usePremiumStore = create<PremiumState>()(
           const res = await fetch(
             `/api/premium/status?user_id=${encodeURIComponent(patientId)}`,
           );
-          const data = await res.json();
-          set({ isPremium: Boolean(data.is_premium) });
+          if (!res.ok) return;
+          const data = (await res.json()) as MembershipStatus;
+          set({ membership: data, isPremium: deriveIsPremium(data) });
         } catch {
           /* keep cached */
         } finally {
@@ -37,18 +51,61 @@ export const usePremiumStore = create<PremiumState>()(
         }
       },
 
-      subscribe: async () => {
+      subscribe: async (billingCycle: BillingCycle = "monthly") => {
         const patientId = getPatientId();
         set({ isLoading: true });
         try {
           const res = await fetch("/api/premium/subscribe", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_id: patientId }),
+            body: JSON.stringify({
+              user_id: patientId,
+              billing_cycle: billingCycle,
+            }),
           });
           if (!res.ok) return false;
           const data = await res.json();
-          set({ isPremium: Boolean(data.is_premium) });
+          const membership: MembershipStatus = {
+            user_id: data.user_id,
+            plan_tier: data.plan_tier,
+            is_premium: data.is_premium,
+            billing_cycle: data.billing_cycle,
+            premium_since: data.premium_since,
+            premium_until: data.premium_until,
+            usage: data.usage ?? DEFAULT_USAGE,
+          };
+          set({ membership, isPremium: deriveIsPremium(membership) });
+          return true;
+        } catch {
+          return false;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      cancel: async () => {
+        const patientId = getPatientId();
+        set({ isLoading: true });
+        try {
+          const res = await fetch("/api/premium/cancel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: patientId }),
+          });
+          if (!res.ok) return false;
+          const data = (await res.json()) as MembershipStatus;
+          set({
+            membership: {
+              user_id: data.user_id,
+              plan_tier: data.plan_tier,
+              is_premium: data.is_premium,
+              billing_cycle: data.billing_cycle,
+              premium_since: data.premium_since,
+              premium_until: data.premium_until,
+              usage: data.usage ?? DEFAULT_USAGE,
+            },
+            isPremium: false,
+          });
           return true;
         } catch {
           return false;
@@ -57,6 +114,16 @@ export const usePremiumStore = create<PremiumState>()(
         }
       },
     }),
-    { name: "prefit-premium", partialize: (s) => ({ isPremium: s.isPremium }) },
+    {
+      name: "prefit-premium",
+      partialize: (s) => ({
+        membership: s.membership,
+        isPremium: s.isPremium,
+      }),
+    },
   ),
 );
+
+export function useMembershipUsage() {
+  return usePremiumStore((s) => s.membership?.usage ?? DEFAULT_USAGE);
+}

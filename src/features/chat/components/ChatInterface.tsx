@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { CalendarCheck, ShieldCheck } from "lucide-react";
+import { MedicalDisclaimer } from "@/components/legal/MedicalDisclaimer";
+import { AdSlot } from "@/features/ads/components/AdSlot";
 import { ChatInput } from "@/features/chat/components/ChatInput";
 import { ChatMessageBubble } from "@/features/chat/components/ChatMessage";
 import { useConsultChat } from "@/features/chat/hooks/useConsultChat";
@@ -93,7 +95,16 @@ export function ChatInterface() {
   );
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="shrink-0 px-4 pt-4 pb-1">
+        <h1 className="text-lg font-semibold tracking-tight text-foreground">
+          상담하기
+        </h1>
+        <p className="mt-0.5 text-[11px] text-muted">
+          병원을 선택하고 AI 실장에게 질문하세요
+        </p>
+      </div>
+
       <div className="flex shrink-0 items-center justify-center gap-1.5 border-b border-border/60 bg-mint/5 px-4 py-2">
         <ShieldCheck className="h-3.5 w-3.5 text-mint-dark" strokeWidth={2} />
         <p className="text-[11px] text-muted">
@@ -111,6 +122,8 @@ export function ChatInterface() {
         className="flex-1 overflow-y-auto overscroll-contain px-4 py-5"
       >
         <div className="mx-auto flex max-w-lg flex-col gap-5">
+          <MedicalDisclaimer variant="inline" className="px-0.5" />
+          <AdSlot placementId="chat_messages_top" />
           {messages.map((msg, i) => (
             <ChatMessageBubble
               key={msg.id}
@@ -147,6 +160,8 @@ export function ChatInterface() {
         </div>
       )}
 
+      <AdSlot placementId="chat_input_above" className="shrink-0 px-4 pt-2" />
+      <MedicalDisclaimer className="shrink-0" />
       <div className="shrink-0">
         <ChatInput />
       </div>

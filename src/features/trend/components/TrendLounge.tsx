@@ -2,14 +2,17 @@
 
 import { TrendQACard } from "@/features/trend/components/TrendQACard";
 import { TrendRankingCarousel } from "@/features/trend/components/TrendRankingCarousel";
+import { AdSlot } from "@/features/ads/components/AdSlot";
 import { loadTrendFeedData } from "@/features/trend/data/load-trend-feed";
 
 export function TrendLounge() {
   const data = loadTrendFeedData();
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
+    <div className="mx-auto w-full max-w-lg px-4 pt-5">
       <TrendRankingCarousel rankings={data.rankings} />
+
+      <AdSlot placementId="trend_feed_top" className="mb-4" />
 
       <section>
         <div className="mb-4 px-1">

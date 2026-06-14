@@ -3,10 +3,13 @@ export type SymptomKeyword = "건조" | "홍조" | "여드름" | "흉터" | "민
 export interface Product {
   id: string;
   name: string;
+  brand?: string;
+  price_krw?: number;
   target_symptom: string[];
   url: string;
   image_url: string;
   description?: string;
+  is_sponsored?: boolean;
 }
 
 export const TRACKED_SYMPTOMS: SymptomKeyword[] = [

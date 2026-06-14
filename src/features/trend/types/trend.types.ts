@@ -2,6 +2,9 @@ export interface TrendYoutubeRef {
   video_id: string;
   title: string;
   thumbnail_url: string;
+  /** 유료 제휴 병원 영상 — 앱 내 썸네일 AD 표시 */
+  is_ad?: boolean;
+  hospital_id?: string;
 }
 
 export interface TrendFeedItem {

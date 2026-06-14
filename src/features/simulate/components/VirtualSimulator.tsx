@@ -1,15 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
-import { FileText } from "lucide-react";
+import { Download, FileText } from "lucide-react";
+import { SimulateDisclaimer } from "@/components/legal/SimulateDisclaimer";
 import { Button } from "@/components/ui/Button";
+import { AdSlot } from "@/features/ads/components/AdSlot";
 import { BeforeAfterSlider } from "@/features/simulate/components/BeforeAfterSlider";
 import { ImageUploadZone } from "@/features/simulate/components/ImageUploadZone";
 import { SimulationProgress } from "@/features/simulate/components/SimulationProgress";
 import { getPatientId } from "@/features/leads/store/leadModalStore";
+import { MembershipStatusCard } from "@/features/premium/components/MembershipStatusCard";
 import { PremiumPaywallModal } from "@/features/premium/components/PremiumPaywallModal";
-import { usePremiumStore } from "@/features/premium/store/premiumStore";
+import { SkinReportPanel } from "@/features/premium/components/SkinReportPanel";
+import {
+  useMembershipUsage,
+  usePremiumStore,
+} from "@/features/premium/store/premiumStore";
+import type { SkinReport } from "@/features/premium/types/premium.types";
 import type {
   ProcedureType,
   SimulateResponse,
@@ -44,11 +53,14 @@ export function VirtualSimulator() {
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [loadingIndex, setLoadingIndex] = useState(0);
   const [result, setResult] = useState<SimulateResponse | null>(null);
+  const [skinReport, setSkinReport] = useState<SkinReport | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [paywallFeature, setPaywallFeature] = useState<PaywallFeature>("simulate");
 
   const isPremium = usePremiumStore((s) => s.isPremium);
+  const membership = usePremiumStore((s) => s.membership);
   const refreshStatus = usePremiumStore((s) => s.refreshStatus);
+  const usage = useMembershipUsage();
 
   useEffect(() => {
     void refreshStatus();
@@ -67,29 +79,23 @@ export function VirtualSimulator() {
     setPaywallOpen(true);
   }, []);
 
+  const canSimulateFree =
+    isPremium ||
+    (usage.simulateLimit !== null && usage.simulateUsed < usage.simulateLimit);
+
   const handleClear = useCallback(() => {
     setFile(null);
     setPreview(null);
     setResult(null);
   }, []);
 
-  const handleSimulate = async () => {
-    if (!file || !preview) {
-      toast.error("시뮬레이션할 사진을 먼저 업로드해 주세요.");
-      return;
-    }
-
-    if (!isPremium) {
-      openPaywall("simulate");
-      return;
-    }
-
+  const runSimulate = async () => {
     setIsLoading(true);
     setLoadingIndex(0);
     setResult(null);
 
     try {
-      const imageBase64 = await fileToBase64(file);
+      const imageBase64 = await fileToBase64(file!);
       const userId = getPatientId();
 
       const res = await fetch("/api/simulate", {
@@ -97,7 +103,7 @@ export function VirtualSimulator() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           imageBase64,
-          mimeType: file.type || "image/jpeg",
+          mimeType: file!.type || "image/jpeg",
           procedure,
           intensity,
           user_id: userId,
@@ -108,7 +114,8 @@ export function VirtualSimulator() {
 
       if (!res.ok) {
         const code = data.code as string | undefined;
-        if (code === "PREMIUM_REQUIRED") {
+        if (code === "PREMIUM_REQUIRED" || code === "QUOTA_EXCEEDED") {
+          void refreshStatus();
           openPaywall("simulate");
           return;
         }
@@ -130,11 +137,12 @@ export function VirtualSimulator() {
 
       const simResult = data as SimulateResponse;
       setResult(simResult);
+      void refreshStatus();
 
       if (simResult.source === "demo") {
         toast.info("데모 모드", {
           description:
-            "REPLICATE_API_TOKEN이 없어 원본 이미지로 UI를 확인합니다. 실제 합성을 위해 API 토큰을 설정하세요.",
+            "REPLICATE_API_TOKEN이 없어 원본 이미지로 UI를 확인합니다.",
         });
       } else {
         toast.success("시뮬레이션이 완료되었습니다!");
@@ -148,6 +156,20 @@ export function VirtualSimulator() {
     }
   };
 
+  const handleSimulate = async () => {
+    if (!file || !preview) {
+      toast.error("시뮬레이션할 사진을 먼저 업로드해 주세요.");
+      return;
+    }
+
+    if (!canSimulateFree) {
+      openPaywall("simulate");
+      return;
+    }
+
+    await runSimulate();
+  };
+
   const handleSkinReport = async () => {
     if (!isPremium) {
       openPaywall("skin-report");
@@ -155,6 +177,7 @@ export function VirtualSimulator() {
     }
 
     setIsReportLoading(true);
+    setSkinReport(null);
     try {
       const res = await fetch("/api/skin-report", {
         method: "POST",
@@ -172,9 +195,8 @@ export function VirtualSimulator() {
         return;
       }
 
-      toast.success("피부 정밀 리포트가 발급되었습니다", {
-        description: data.summary,
-      });
+      setSkinReport(data as SkinReport);
+      toast.success("피부 정밀 리포트가 발급되었습니다");
     } catch {
       toast.error("네트워크 오류");
     } finally {
@@ -182,19 +204,40 @@ export function VirtualSimulator() {
     }
   };
 
+  const handleDownloadResult = () => {
+    if (!result || !isPremium) {
+      openPaywall("simulate");
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = result.afterImage;
+    link.download = `prefit-after-${procedure}-${Date.now()}.png`;
+    link.click();
+  };
+
   const labels = INTENSITY_LABELS[procedure];
 
   return (
     <>
-      <div className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-6 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+      <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col gap-5 overflow-y-auto px-4 py-5">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
             가상 성형 시뮬레이터
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Stable Diffusion 인페인팅으로 비포/애프터를 미리 확인해 보세요
+            AI 합성으로 Before / After를 미리 확인하세요
           </p>
         </div>
+
+        <MembershipStatusCard
+          membership={membership}
+          isPremium={isPremium}
+          onUpgrade={() => openPaywall("simulate")}
+        />
+
+        <AdSlot placementId="simulate_header_below" />
+
+        <SimulateDisclaimer />
 
         <div className="flex gap-2 rounded-2xl bg-background p-1">
           {(Object.keys(PROCEDURE_LABELS) as ProcedureType[]).map((key) => (
@@ -260,7 +303,13 @@ export function VirtualSimulator() {
           disabled={!file || isLoading}
           onClick={() => void handleSimulate()}
         >
-          {isLoading ? "시뮬레이션 진행 중..." : "시뮬레이션 시작"}
+          {isLoading
+            ? "시뮬레이션 진행 중..."
+            : isPremium
+              ? "시뮬레이션 시작"
+              : canSimulateFree
+                ? `무료 시뮬레이션 (${usage.simulateUsed}/${usage.simulateLimit})`
+                : "Premium으로 시뮬레이션"}
         </Button>
 
         <Button
@@ -271,13 +320,25 @@ export function VirtualSimulator() {
           onClick={() => void handleSkinReport()}
         >
           <FileText className="mr-2 h-4 w-4" />
-          {isReportLoading ? "리포트 생성 중..." : "피부 정밀 리포트 발급"}
+          {isReportLoading
+            ? "리포트 생성 중..."
+            : isPremium
+              ? "피부 정밀 리포트 발급"
+              : "피부 리포트 (Premium)"}
         </Button>
+
+        {skinReport && (
+          <SkinReportPanel
+            report={skinReport}
+            onClose={() => setSkinReport(null)}
+          />
+        )}
 
         {isLoading && <SimulationProgress messageIndex={loadingIndex} />}
 
         {result && !isLoading && (
           <div className="flex flex-col gap-4">
+            <SimulateDisclaimer />
             <BeforeAfterSlider
               beforeSrc={result.beforeImage}
               afterSrc={result.afterImage}
@@ -291,18 +352,38 @@ export function VirtualSimulator() {
                 {result.source === "demo" ? "데모" : "Replicate SD"}
               </p>
             </div>
-            <Button
-              variant="secondary"
-              size="md"
-              className="w-full"
-              onClick={() => {
-                setResult(null);
-                void handleSimulate();
-              }}
-            >
-              다시 시뮬레이션
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="md"
+                className="flex-1"
+                onClick={() => {
+                  setResult(null);
+                  void handleSimulate();
+                }}
+              >
+                다시 시뮬레이션
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                className="flex-1"
+                onClick={handleDownloadResult}
+              >
+                <Download className="mr-1.5 h-4 w-4" />
+                HD 저장
+              </Button>
+            </div>
           </div>
+        )}
+
+        {!isPremium && (
+          <p className="text-center text-[11px] text-muted">
+            <Link href="/premium" className="font-medium text-mint-dark underline-offset-2 hover:underline">
+              Premium 요금제
+            </Link>
+            {" "}에서 무제한 시뮬·피부 리포트를 이용하세요
+          </p>
         )}
       </div>
 
@@ -315,9 +396,10 @@ export function VirtualSimulator() {
             : "피부 정밀 리포트"
         }
         onActivated={() => {
-          if (paywallFeature === "simulate") {
-            void handleSimulate();
-          } else {
+          void refreshStatus();
+          if (paywallFeature === "simulate" && file) {
+            void runSimulate();
+          } else if (paywallFeature === "skin-report") {
             void handleSkinReport();
           }
         }}

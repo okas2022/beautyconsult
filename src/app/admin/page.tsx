@@ -6,6 +6,7 @@ import {
   Building2,
   CreditCard,
   Handshake,
+  Megaphone,
   Play,
   Users,
 } from "lucide-react";
@@ -33,6 +34,12 @@ function AdminDashboardContent() {
       icon: Users,
       title: "Lead 관리",
       description: "상담 예약 리드 · 상태 변경",
+    },
+    {
+      href: `/admin/ads`,
+      icon: Megaphone,
+      title: "앱 내 광고",
+      description: "슬롯별 ON/OFF · 이미지·동영상 배너",
     },
     {
       href: `/admin/partnerships${q}`,

@@ -8,7 +8,8 @@ import {
   isReplicateConfigured,
   parseSimulateError,
 } from "@/lib/replicate/inpaint-service";
-import { requirePremiumUser } from "@/lib/premium/require-premium";
+import { requireSimulateAccess } from "@/lib/premium/require-premium";
+import { recordSimulateUsage } from "@/lib/users/user-service";
 
 export const maxDuration = 120;
 
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     const userId =
       typeof body?.user_id === "string" ? body.user_id.trim() : "";
 
-    const auth = await requirePremiumUser(userId);
+    const auth = await requireSimulateAccess(userId);
     if (!auth.ok) return auth.response;
 
     if (!imageBase64) {
@@ -77,6 +78,10 @@ export async function POST(request: NextRequest) {
 
     if (!isReplicateConfigured()) {
       response.source = "demo";
+    }
+
+    if (!auth.isPremium) {
+      await recordSimulateUsage(userId);
     }
 
     return NextResponse.json(response);

@@ -11,6 +11,7 @@ import {
   loadHospitalRagContext,
 } from "@/lib/knowledge/hospital-rag";
 import { getTenantHospitalIdFromRequest } from "@/lib/tenant/server";
+import { applyAdDisclosureToVideoRefs } from "@/lib/hospitals/ad-disclosure";
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +52,10 @@ export async function POST(request: NextRequest) {
 
     const fromReply = extractVideoRefsFromText(result.reply, knowledge);
     const fromRag = videoKnowledgeToRefs(rag.videos);
-    const videoRefs = mergeVideoRefs(fromReply, fromRag);
+    const videoRefs = applyAdDisclosureToVideoRefs(
+      mergeVideoRefs(fromReply, fromRag),
+      hospitalId,
+    );
     const products = matchProductsBySymptoms(result.symptomKeywords);
 
     return NextResponse.json({

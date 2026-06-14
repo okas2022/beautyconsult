@@ -14,6 +14,8 @@ export interface YoutubeVideoRef {
   timestamp: string;
   deep_link: string;
   label: string;
+  /** 유료 제휴 병원 영상 — 앱 내 노출 시 AD 표시 */
+  is_ad?: boolean;
 }
 
 export interface ChatMessage {

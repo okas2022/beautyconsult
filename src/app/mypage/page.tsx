@@ -1,24 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, Crown, Sparkles, User } from "lucide-react";
-import { PremiumPaywallModal } from "@/features/premium/components/PremiumPaywallModal";
+import { ChevronRight, Sparkles, User } from "lucide-react";
+import { MembershipStatusCard } from "@/features/premium/components/MembershipStatusCard";
+import { AdSlot } from "@/features/ads/components/AdSlot";
 import { usePremiumStore } from "@/features/premium/store/premiumStore";
 import { getPatientId } from "@/features/leads/store/leadModalStore";
 
 export default function MyPage() {
   const isPremium = usePremiumStore((s) => s.isPremium);
-  const [patientShortId, setPatientShortId] = useState("···");
-  const [paywallOpen, setPaywallOpen] = useState(false);
+  const membership = usePremiumStore((s) => s.membership);
+  const refreshStatus = usePremiumStore((s) => s.refreshStatus);
 
   useEffect(() => {
-    setPatientShortId(getPatientId().slice(0, 8));
-  }, []);
+    void refreshStatus();
+  }, [refreshStatus]);
+
+  const patientShortId = getPatientId().slice(0, 8);
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
-      <div className="mb-8 flex items-center gap-4">
+    <div className="mx-auto w-full max-w-lg px-4 pt-6">
+      <div className="mb-6 flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground/[0.04]">
           <User className="h-7 w-7 text-muted" strokeWidth={1.5} />
         </div>
@@ -28,36 +31,42 @@ export default function MyPage() {
         </div>
       </div>
 
-      <div className="mb-6 rounded-3xl border border-border/70 bg-surface p-5 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Crown className={isPremium ? "h-5 w-5 text-mint-dark" : "h-5 w-5 text-muted"} />
-            <span className="text-sm font-semibold text-foreground">
-              {isPremium ? "Premium 회원" : "일반 회원"}
-            </span>
-          </div>
-          {!isPremium && (
-            <button
-              type="button"
-              onClick={() => setPaywallOpen(true)}
-              className="text-xs font-medium text-mint-dark"
-            >
-              무료 활성화
-            </button>
-          )}
-        </div>
-        <p className="mt-2 text-[12px] leading-relaxed text-muted">
-          {isPremium
-            ? "가상 성형·정밀 리포트를 무제한 이용 중입니다."
-            : "Premium으로 가상 성형과 AI 정밀 분석을 이용해 보세요."}
-        </p>
-      </div>
+      <MembershipStatusCard
+        membership={membership}
+        isPremium={isPremium}
+        onUpgrade={() => {
+          window.location.href = "/premium";
+        }}
+        onManage={() => {
+          window.location.href = "/premium";
+        }}
+        className="mb-6"
+      />
+
+      <AdSlot placementId="mypage_membership_below" className="mb-6" />
 
       <nav className="flex flex-col gap-2">
         {[
-          { href: "/chat", label: "AI 상담 내역", desc: "PreFit AI 실장과 대화" },
-          { href: "/simulate", label: "가상 성형 시뮬레이터", desc: "Before / After" },
-          { href: "/trend", label: "트렌드 라운지", desc: "실시간 Q&A 피드" },
+          {
+            href: "/chat",
+            label: "AI 상담",
+            desc: "PreFit AI 실장과 대화 · 화장품 추천",
+          },
+          {
+            href: "/simulate",
+            label: "가상 성형 시뮬레이터",
+            desc: isPremium ? "무제한 Before / After" : "월 1회 무료 체험",
+          },
+          {
+            href: "/premium",
+            label: "Premium 멤버십",
+            desc: isPremium ? "구독 관리 · 혜택 확인" : "9,900원/월부터",
+          },
+          {
+            href: "/trend",
+            label: "트렌드 라운지",
+            desc: "실시간 Q&A 피드",
+          },
         ].map((item) => (
           <Link
             key={item.href}
@@ -73,16 +82,20 @@ export default function MyPage() {
         ))}
       </nav>
 
+      <div className="mt-6 rounded-2xl border border-lavender/20 bg-lavender/5 p-4">
+        <p className="text-xs font-semibold text-foreground">수익 모델 안내</p>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+          AI 상담 중 표시되는{" "}
+          <span className="text-foreground">화장품·뷰티 기기</span>는 제휴 광고이며,
+          Premium 구독은{" "}
+          <span className="text-foreground">가상 성형·피부 분석</span> 전용입니다.
+        </p>
+      </div>
+
       <p className="mt-8 flex items-center justify-center gap-1.5 text-[10px] text-muted">
         <Sparkles className="h-3 w-3" />
         PreFit · 검증된 전문의 데이터 기반
       </p>
-
-      <PremiumPaywallModal
-        isOpen={paywallOpen}
-        onClose={() => setPaywallOpen(false)}
-        featureName="PreFit Premium"
-      />
     </div>
   );
 }

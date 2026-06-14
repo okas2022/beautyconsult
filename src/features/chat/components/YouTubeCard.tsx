@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { CalendarCheck, Clock, ExternalLink, Play } from "lucide-react";
 import type { YoutubeVideoRef } from "@/features/chat/types/chat.types";
+import { hospitalRequiresAdDisclosure } from "@/lib/hospitals/ad-disclosure";
 import { useLeadModalStore } from "@/features/leads/store/leadModalStore";
 import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
+import { VideoAdBadge } from "@/components/ui/VideoAdBadge";
 import { cn } from "@/lib/utils";
 
 interface YouTubeCardProps {
@@ -20,7 +22,10 @@ export function YouTubeCard({
   showBookingButton = true,
 }: YouTubeCardProps) {
   const openLeadModal = useLeadModalStore((s) => s.open);
-  const hospitalId = useHospitalStore((s) => s.selectedHospitalId);
+  const hospital = useHospitalStore((s) => s.getSelectedHospital());
+  const hospitalId = hospital.id;
+  const showAd =
+    reference.is_ad ?? hospitalRequiresAdDisclosure(hospital);
   const isShort = reference.content_type === "short";
   const thumbnailUrl = `https://img.youtube.com/vi/${reference.video_id}/hqdefault.jpg`;
 
@@ -74,6 +79,7 @@ export function YouTubeCard({
               Shorts
             </span>
           )}
+          {showAd && <VideoAdBadge className="right-2 top-2" />}
         </div>
 
         <div className="p-3.5 pb-2">

@@ -1,16 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { Crown, Loader2, Sparkles, X } from "lucide-react";
+import { Crown, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { PlanComparisonTable } from "@/features/premium/components/PlanComparisonTable";
+import {
+  formatKrw,
+  PREMIUM_PLANS,
+  PREMIUM_VALUE_PROPS,
+  type BillingCycle,
+} from "@/features/premium/constants/plans";
 import { usePremiumStore } from "@/features/premium/store/premiumStore";
+import { cn } from "@/lib/utils";
 
 interface PremiumPaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
   featureName?: string;
-  /** 무료 활성화 직후 재시도 등 */
   onActivated?: () => void;
 }
 
@@ -22,15 +30,20 @@ export function PremiumPaywallModal({
 }: PremiumPaywallModalProps) {
   const subscribe = usePremiumStore((s) => s.subscribe);
   const isLoading = usePremiumStore((s) => s.isLoading);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+
+  const plan = PREMIUM_PLANS[billingCycle];
 
   const handleSubscribe = async () => {
-    const ok = await subscribe();
+    const ok = await subscribe(billingCycle);
     if (ok) {
-      toast.success("Premium 멤버십이 활성화되었습니다!");
+      toast.success("PreFit Premium 구독이 시작되었습니다!", {
+        description: `${formatKrw(plan.priceKrw)}/${plan.periodLabel} · 베타 기간 실결제 없음`,
+      });
       onClose();
       onActivated?.();
     } else {
-      toast.error("결제 처리에 실패했습니다. 다시 시도해 주세요.");
+      toast.error("구독 처리에 실패했습니다. 다시 시도해 주세요.");
     }
   };
 
@@ -49,53 +62,88 @@ export function PremiumPaywallModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-x-4 top-[15%] z-[111] mx-auto max-w-sm"
+            className="fixed inset-x-3 bottom-[calc(4rem+env(safe-area-inset-bottom))] top-auto z-[111] mx-auto max-h-[min(85dvh,640px)] max-w-sm overflow-y-auto md:inset-x-4 md:bottom-auto md:top-[8%]"
           >
             <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl">
-              <div className="relative bg-gradient-to-br from-mint/20 via-lavender/10 to-surface px-6 pb-6 pt-8 text-center">
+              <div className="relative bg-gradient-to-br from-mint/15 via-lavender/10 to-surface px-5 pb-4 pt-6">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="absolute right-4 top-4 rounded-full p-1 text-muted hover:bg-black/5"
+                  className="absolute right-3 top-3 rounded-full p-1.5 text-muted hover:bg-black/5"
                   aria-label="닫기"
                 >
                   <X className="h-5 w-5" />
                 </button>
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-lavender shadow-lg">
-                  <Crown className="h-7 w-7 text-white" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-mint to-lavender shadow-lg">
+                  <Crown className="h-6 w-6 text-white" />
                 </div>
-                <h2 className="text-lg font-semibold text-foreground">
+                <h2 className="text-center text-lg font-semibold text-foreground">
                   PreFit Premium
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  월 <span className="font-bold text-foreground">4,900원</span>
-                  상당의 기능을
-                  <br />
-                  지금 <span className="font-bold text-mint-dark">무료</span>로
-                  이용해 보세요
+                <p className="mt-1 text-center text-[12px] text-muted">
+                  {featureName} 포함 · 가상 성형 & 피부 분석
                 </p>
               </div>
 
-              <div className="space-y-3 px-6 py-5">
-                {[
-                  "3D 가상 성형 시뮬레이션 무제한",
-                  "AI 피부 정밀 리포트 발급",
-                  "고급 Stable Diffusion 합성",
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-2 text-sm text-foreground">
-                    <Sparkles className="h-4 w-4 shrink-0 text-mint-dark" />
-                    {item}
-                  </div>
-                ))}
+              <div className="space-y-4 px-5 py-4">
+                <div className="flex gap-2 rounded-2xl bg-background p-1">
+                  {(["monthly", "annual"] as BillingCycle[]).map((cycle) => {
+                    const p = PREMIUM_PLANS[cycle];
+                    return (
+                      <button
+                        key={cycle}
+                        type="button"
+                        onClick={() => setBillingCycle(cycle)}
+                        className={cn(
+                          "relative flex-1 rounded-xl py-2.5 text-center transition-all",
+                          billingCycle === cycle
+                            ? "bg-surface shadow-sm"
+                            : "text-muted hover:text-foreground",
+                        )}
+                      >
+                        {p.badge && billingCycle === cycle && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-mint px-1.5 py-px text-[8px] font-bold text-white">
+                            {p.badge}
+                          </span>
+                        )}
+                        <span className="block text-xs font-semibold">{p.label}</span>
+                        <span className="mt-0.5 block text-[10px] text-muted">
+                          {formatKrw(p.priceKrw)}/{p.periodLabel}
+                        </span>
+                        {p.savingsLabel && (
+                          <span className="mt-0.5 block text-[9px] font-medium text-mint-dark">
+                            {p.savingsLabel}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                <p className="text-center text-[11px] text-muted">
-                  {featureName}은 Premium 회원 전용입니다
+                <ul className="space-y-2">
+                  {PREMIUM_VALUE_PROPS.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-[12px] leading-snug text-foreground"
+                    >
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-mint" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <PlanComparisonTable compact />
+
+                <p className="text-center text-[10px] leading-relaxed text-muted">
+                  베타 기간에는 실제 결제 없이 구독을 체험할 수 있습니다.
+                  <br />
+                  정식 출시 시 토스페이먼츠로 자동 결제됩니다.
                 </p>
 
                 <Button
                   variant="primary"
                   size="lg"
-                  className="mt-2 w-full"
+                  className="w-full"
                   disabled={isLoading}
                   onClick={() => void handleSubscribe()}
                 >
@@ -105,14 +153,14 @@ export function PremiumPaywallModal({
                       처리 중...
                     </>
                   ) : (
-                    "프리미엄 무료 활성화"
+                    `${formatKrw(plan.priceKrw)}으로 Premium 시작`
                   )}
                 </Button>
 
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full py-2 text-xs text-muted hover:text-foreground"
+                  className="w-full py-1 text-xs text-muted hover:text-foreground"
                 >
                   나중에 하기
                 </button>

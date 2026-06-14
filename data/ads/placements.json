@@ -1,0 +1,57 @@
+[
+  {
+    "id": "chat_messages_top",
+    "label": "상담하기 · 대화 상단",
+    "description": "환영 메시지 아래, 대화 목록 최상단",
+    "is_enabled": false,
+    "media_type": null,
+    "media_url": null,
+    "click_url": null,
+    "alt_text": null,
+    "updated_at": null
+  },
+  {
+    "id": "chat_input_above",
+    "label": "상담하기 · 입력창 위",
+    "description": "채팅 입력창 바로 위 배너",
+    "is_enabled": false,
+    "media_type": null,
+    "media_url": null,
+    "click_url": null,
+    "alt_text": null,
+    "updated_at": null
+  },
+  {
+    "id": "trend_feed_top",
+    "label": "트렌드 · 피드 상단",
+    "description": "랭킹 캐러셀 아래, Q&A 피드 위",
+    "is_enabled": false,
+    "media_type": null,
+    "media_url": null,
+    "click_url": null,
+    "alt_text": null,
+    "updated_at": null
+  },
+  {
+    "id": "mypage_membership_below",
+    "label": "마이페이지 · 멤버십 아래",
+    "description": "Premium 카드와 메뉴 사이",
+    "is_enabled": false,
+    "media_type": null,
+    "media_url": null,
+    "click_url": null,
+    "alt_text": null,
+    "updated_at": null
+  },
+  {
+    "id": "simulate_header_below",
+    "label": "시뮬레이터 · 헤더 아래",
+    "description": "멤버십 카드 아래, 업로드 영역 위",
+    "is_enabled": false,
+    "media_type": null,
+    "media_url": null,
+    "click_url": null,
+    "alt_text": null,
+    "updated_at": null
+  }
+]

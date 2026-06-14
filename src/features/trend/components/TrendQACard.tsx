@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight, MessageCircle } from "lucide-react";
 import type { TrendFeedItem } from "@/features/trend/types/trend.types";
 import { useTrendHandoffStore } from "@/features/trend/store/trendHandoffStore";
+import { VideoAdBadge } from "@/components/ui/VideoAdBadge";
 import { cn } from "@/lib/utils";
 
 interface TrendQACardProps {
@@ -56,6 +57,9 @@ export function TrendQACard({ item, index }: TrendQACardProps) {
               className="object-cover"
               sizes="80px"
             />
+            {item.youtube.is_ad && (
+              <VideoAdBadge className="right-0.5 top-0.5 scale-90" />
+            )}
           </div>
           <div className="min-w-0 flex-1 py-0.5">
             <p className="text-[10px] font-medium uppercase tracking-wide text-muted">

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateUser } from "@/lib/users/user-service";
+import { getMembershipStatus } from "@/lib/users/user-service";
 
 export async function GET(request: NextRequest) {
   const userId = request.nextUrl.searchParams.get("user_id")?.trim();
@@ -9,12 +9,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const user = await getOrCreateUser(userId);
-    return NextResponse.json({
-      user_id: user.id,
-      is_premium: user.is_premium,
-      premium_since: user.premium_since,
-    });
+    const membership = await getMembershipStatus(userId);
+    return NextResponse.json(membership);
   } catch {
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }

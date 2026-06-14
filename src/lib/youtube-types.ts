@@ -23,4 +23,5 @@ export interface YoutubeVideoRef {
   timestamp: string;
   deep_link: string;
   label: string;
+  is_ad?: boolean;
 }

@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { CalendarCheck, ShieldCheck } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
+import { MOBILE_TAB_BAR_PADDING_CLASS } from "@/components/layout/constants";
 import { MedicalDisclaimer } from "@/components/legal/MedicalDisclaimer";
 import { AdSlot } from "@/features/ads/components/AdSlot";
 import { ChatInput } from "@/features/chat/components/ChatInput";
@@ -15,6 +16,7 @@ import { HospitalSelector } from "@/features/hospitals/components/HospitalSelect
 import { useHospitalStore } from "@/features/hospitals/store/hospitalStore";
 import { useHospitalProfileStore } from "@/features/hospitals/store/hospitalProfileStore";
 import { useTrendHandoffStore } from "@/features/trend/store/trendHandoffStore";
+import { cn } from "@/lib/utils";
 
 function TypingIndicator() {
   return (
@@ -96,30 +98,23 @@ export function ChatInterface() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="shrink-0 px-4 pt-4 pb-1">
+      {/* 페이지 헤더 — 트렌드·마이페이지와 동일 톤 */}
+      <div className="shrink-0 px-4 pt-5 pb-3">
         <h1 className="text-lg font-semibold tracking-tight text-foreground">
           상담하기
         </h1>
         <p className="mt-0.5 text-[11px] text-muted">
-          병원을 선택하고 AI 실장에게 질문하세요
+          {selectedHospital.name} 유튜브 RAG · AI 실장 상담
         </p>
       </div>
 
-      <div className="flex shrink-0 items-center justify-center gap-1.5 border-b border-border/60 bg-mint/5 px-4 py-2">
-        <ShieldCheck className="h-3.5 w-3.5 text-mint-dark" strokeWidth={2} />
-        <p className="text-[11px] text-muted">
-          <span className="font-medium text-mint-dark">{selectedHospital.name}</span>{" "}
-          유튜브 대본 기반 AI 상담 — 원장님 답변 구간 재생
-        </p>
-      </div>
-
-      <div className="shrink-0 border-b border-border/60 bg-surface px-4 py-3">
-        <HospitalSelector />
+      <div className="shrink-0 border-b border-border/60 px-4 pb-3">
+        <HospitalSelector compact />
       </div>
 
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overscroll-contain px-4 py-5"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4"
       >
         <div className="mx-auto flex max-w-lg flex-col gap-5">
           <MedicalDisclaimer variant="inline" className="px-0.5" />
@@ -136,33 +131,39 @@ export function ChatInterface() {
         </div>
       </div>
 
-      {hasConversation ? (
-        <div className="shrink-0 border-t border-border/60 bg-surface px-4 py-2.5">
-          <button
-            type="button"
-            onClick={() => openLeadModal({ hospitalId: selectedHospital.id })}
-            className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 rounded-xl border border-mint/30 bg-mint/5 py-2.5 text-xs font-semibold text-mint-dark transition hover:bg-mint/10 active:scale-[0.99]"
-          >
-            <CalendarCheck className="h-4 w-4" />
-            원장님께 바로 예약 / 상담 신청하기
-          </button>
-        </div>
-      ) : (
-        <div className="shrink-0 border-t border-border/60 bg-surface px-4 py-2">
-          <button
-            type="button"
-            onClick={() => openLeadModal({ hospitalId: selectedHospital.id })}
-            className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 rounded-xl border border-dashed border-mint/25 py-2 text-[11px] font-medium text-muted transition hover:border-mint/40 hover:text-mint-dark"
-          >
-            <CalendarCheck className="h-3.5 w-3.5" />
-            상담 후 병원 예약도 도와드립니다
-          </button>
-        </div>
-      )}
+      {/* 입력 영역 — 하단 탭바 위 고정 */}
+      <div
+        className={cn(
+          "shrink-0 border-t border-border/60 bg-surface",
+          MOBILE_TAB_BAR_PADDING_CLASS,
+        )}
+      >
+        {hasConversation ? (
+          <div className="px-4 py-2">
+            <button
+              type="button"
+              onClick={() => openLeadModal({ hospitalId: selectedHospital.id })}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-mint/30 bg-mint/5 py-2 text-xs font-semibold text-mint-dark transition hover:bg-mint/10 active:scale-[0.99]"
+            >
+              <CalendarCheck className="h-3.5 w-3.5" />
+              원장님께 예약 / 상담 신청
+            </button>
+          </div>
+        ) : (
+          <div className="px-4 py-1.5">
+            <button
+              type="button"
+              onClick={() => openLeadModal({ hospitalId: selectedHospital.id })}
+              className="flex w-full items-center justify-center gap-1.5 py-1.5 text-[10px] font-medium text-muted transition hover:text-mint-dark"
+            >
+              <CalendarCheck className="h-3 w-3" />
+              상담 후 병원 예약도 도와드립니다
+            </button>
+          </div>
+        )}
 
-      <AdSlot placementId="chat_input_above" className="shrink-0 px-4 pt-2" />
-      <MedicalDisclaimer className="shrink-0" />
-      <div className="shrink-0">
+        <AdSlot placementId="chat_input_above" className="px-4 pb-1" />
+        <MedicalDisclaimer />
         <ChatInput />
       </div>
 

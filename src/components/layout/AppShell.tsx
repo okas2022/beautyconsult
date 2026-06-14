@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import {
   isMobileTabPath,
+  MOBILE_TAB_BAR_PADDING_CLASS,
 } from "@/components/layout/constants";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { AdBootstrap } from "@/features/ads/components/AdBootstrap";
@@ -33,8 +34,8 @@ export function AppShell({ children }: AppShellProps) {
       <main
         className={cn(
           "flex min-h-0 flex-1 flex-col",
-          (isTabPage || isImmersive) &&
-            "pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0",
+          isTabPage && !isChat && MOBILE_TAB_BAR_PADDING_CLASS,
+          isImmersive && MOBILE_TAB_BAR_PADDING_CLASS,
           isChat || isImmersive
             ? "overflow-hidden"
             : isTabPage

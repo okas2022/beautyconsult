@@ -15,8 +15,10 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-surface/90 backdrop-blur-xl md:hidden">
-      <div className="mx-auto flex max-w-lg items-stretch pb-[env(safe-area-inset-bottom)]">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 h-[calc(3.5rem+env(safe-area-inset-bottom))] border-t border-border/60 bg-surface/90 backdrop-blur-xl md:hidden"
+    >
+      <div className="mx-auto flex h-[3.5rem] max-w-lg items-stretch">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive = pathname.startsWith(href);
 

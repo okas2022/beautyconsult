@@ -18,9 +18,11 @@ const CATEGORY_ORDER: HospitalCategory[] = ["mega", "specialty", "trend"];
 
 interface HospitalSelectorProps {
   className?: string;
+  /** 상담 탭 — 병원 칩만, 프로필 카드는 모달로 */
+  compact?: boolean;
 }
 
-export function HospitalSelector({ className }: HospitalSelectorProps) {
+export function HospitalSelector({ className, compact }: HospitalSelectorProps) {
   const selectedId = useHospitalStore((s) => s.selectedHospitalId);
   const categoryFilter = useHospitalStore((s) => s.categoryFilter);
   const setHospitalId = useHospitalStore((s) => s.setHospitalId);
@@ -85,12 +87,29 @@ export function HospitalSelector({ className }: HospitalSelectorProps) {
         ))}
       </div>
 
-      {selected && selectedProfile && (
+      {selected && selectedProfile && !compact && (
         <HospitalProfileCard
           profile={selectedProfile}
           hospitalName={selected.name}
           onDetailClick={() => openDetail(selected.id)}
         />
+      )}
+
+      {selected && selectedProfile && compact && (
+        <button
+          type="button"
+          onClick={() => openDetail(selected.id)}
+          className="flex w-full items-center justify-between rounded-xl border border-border/60 bg-background px-3 py-2 text-left transition hover:border-mint/30"
+        >
+          <span className="text-[11px] text-muted">
+            <span className="font-semibold text-foreground">{selected.name}</span>
+            {" · "}
+            {selectedProfile.tagline}
+          </span>
+          <span className="shrink-0 text-[10px] font-semibold text-mint-dark">
+            자세히
+          </span>
+        </button>
       )}
 
       {selected?.partnership.status === "prospect" && (

@@ -39,7 +39,7 @@ export function ChatInput() {
   };
 
   return (
-    <div className="border-t border-border bg-surface/80 backdrop-blur-xl">
+    <div className="bg-surface/80 backdrop-blur-xl">
       <AnimatePresence>
         {preview && (
           <motion.div

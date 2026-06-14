@@ -26,6 +26,18 @@ const PATIENT_ID_KEY = "prefit_patient_id";
 
 export function getPatientId(): string {
   if (typeof window === "undefined") return "anonymous";
+
+  try {
+    const raw = localStorage.getItem("prefit-auth");
+    if (raw) {
+      const parsed = JSON.parse(raw) as { state?: { member?: { id?: string } } };
+      const memberId = parsed?.state?.member?.id;
+      if (memberId) return memberId;
+    }
+  } catch {
+    /* ignore */
+  }
+
   let id = localStorage.getItem(PATIENT_ID_KEY);
   if (!id) {
     id = crypto.randomUUID();

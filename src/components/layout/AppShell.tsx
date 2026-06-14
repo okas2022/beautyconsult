@@ -4,10 +4,12 @@ import { usePathname } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import {
+  isMarketingPath,
   isMobileTabPath,
   MOBILE_TAB_BAR_PADDING_CLASS,
 } from "@/components/layout/constants";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { GuestModeBanner } from "@/features/auth/components/GuestModeBanner";
 import { AdBootstrap } from "@/features/ads/components/AdBootstrap";
 import { TenantBootstrapGate } from "@/features/hospitals/components/TenantBootstrapGate";
 import { PremiumBootstrap } from "@/features/premium/components/PremiumBootstrap";
@@ -19,6 +21,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const isMarketing = isMarketingPath(pathname);
   const isTabPage = isMobileTabPath(pathname);
   const isChat = pathname.startsWith("/chat");
   const isImmersive = pathname.startsWith("/simulate");
@@ -29,7 +32,8 @@ export function AppShell({ children }: AppShellProps) {
       <TenantBootstrapGate />
       <PremiumBootstrap />
       <AdBootstrap />
-      <Header />
+      {!isMarketing && <GuestModeBanner />}
+      {!isMarketing && <Header />}
 
       <main
         className={cn(
@@ -46,8 +50,8 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
 
-      {!hideFooter && <Footer />}
-      <MobileNav />
+      {!hideFooter && !isMarketing && <Footer />}
+      {!isMarketing && <MobileNav />}
     </div>
   );
 }

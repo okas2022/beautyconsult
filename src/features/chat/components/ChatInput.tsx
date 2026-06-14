@@ -20,7 +20,10 @@ export function ChatInput() {
     const userContent = trimmed || "사진을 첨부했습니다.";
     setInput("");
     setPreview(null);
-    await sendMessage(userContent);
+    const result = await sendMessage(userContent);
+    if (!result.ok) {
+      // 메시지는 hook에서 추가되지 않음 (게스트 제한 시)
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

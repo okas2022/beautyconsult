@@ -1,6 +1,11 @@
-import { redirect } from "next/navigation";
+import { LandingPage } from "@/features/auth/components/LandingPage";
+import { AuthLandingRedirect } from "@/features/auth/components/AuthLandingRedirect";
 
-/** 메인 진입점 → 트렌드 라운지 */
 export default function HomePage() {
-  redirect("/trend");
+  return (
+    <>
+      <AuthLandingRedirect />
+      <LandingPage />
+    </>
+  );
 }

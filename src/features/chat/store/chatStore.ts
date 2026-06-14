@@ -1,11 +1,14 @@
 import { create } from "zustand";
+import type { ChatSendBlockReason } from "@/features/chat/types/chat-send.types";
 import type { ChatMessage } from "@/features/chat/types/chat.types";
 
 interface ChatState {
   messages: ChatMessage[];
   isTyping: boolean;
+  signupBlockReason: ChatSendBlockReason | null;
   addMessage: (message: Omit<ChatMessage, "id" | "timestamp">) => void;
   setIsTyping: (typing: boolean) => void;
+  setSignupBlockReason: (reason: ChatSendBlockReason | null) => void;
   getHistoryForApi: () => Array<{ role: "user" | "assistant"; content: string }>;
 }
 
@@ -21,6 +24,7 @@ const WELCOME_MESSAGE: ChatMessage = {
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [WELCOME_MESSAGE],
   isTyping: false,
+  signupBlockReason: null,
   addMessage: (message) =>
     set((state) => ({
       messages: [
@@ -33,6 +37,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       ],
     })),
   setIsTyping: (typing) => set({ isTyping: typing }),
+  setSignupBlockReason: (reason) => set({ signupBlockReason: reason }),
   getHistoryForApi: () =>
     get()
       .messages.filter((m) => m.id !== "welcome")

@@ -8,6 +8,7 @@ import { MedicalDisclaimer } from "@/components/legal/MedicalDisclaimer";
 import { AdSlot } from "@/features/ads/components/AdSlot";
 import { ChatInput } from "@/features/chat/components/ChatInput";
 import { ChatMessageBubble } from "@/features/chat/components/ChatMessage";
+import { SignupPromptModal } from "@/features/auth/components/SignupPromptModal";
 import { useConsultChat } from "@/features/chat/hooks/useConsultChat";
 import { useChatStore } from "@/features/chat/store/chatStore";
 import { LeadBookingModal } from "@/features/leads/components/LeadBookingModal";
@@ -52,7 +53,7 @@ function TypingIndicator() {
 export function ChatInterface() {
   const messages = useChatStore((s) => s.messages);
   const isTyping = useChatStore((s) => s.isTyping);
-  const { sendMessage } = useConsultChat();
+  const { sendMessage, blockReason, clearBlockReason } = useConsultChat();
   const openLeadModal = useLeadModalStore((s) => s.open);
   const openHospitalDetail = useHospitalProfileStore((s) => s.openDetail);
   const selectedHospital = useHospitalStore((s) => s.getSelectedHospital());
@@ -98,6 +99,20 @@ export function ChatInterface() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <SignupPromptModal
+        open={blockReason !== null}
+        title={
+          blockReason === "guest_limit"
+            ? "둘러보기 상담 횟수를 모두 사용했습니다"
+            : "로그인 또는 둘러보기 후 이용 가능합니다"
+        }
+        description={
+          blockReason === "guest_limit"
+            ? "AI 상담 1회 체험이 완료되었습니다. 회원가입 후 무제한 상담과 시뮬레이터·프리미엄을 이용해 주세요."
+            : "앱 소개 화면에서 둘러보기를 선택하거나, 회원가입·로그인 후 AI 상담을 이용하실 수 있습니다."
+        }
+        onClose={clearBlockReason}
+      />
       {/* 페이지 헤더 — 트렌드·마이페이지와 동일 톤 */}
       <div className="shrink-0 px-4 pt-5 pb-3">
         <h1 className="text-lg font-semibold tracking-tight text-foreground">

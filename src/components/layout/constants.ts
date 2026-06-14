@@ -6,6 +6,12 @@ export const MOBILE_TAB_BAR_PADDING_CLASS =
 
 export const MOBILE_TAB_PATHS = ["/chat", "/trend", "/mypage"] as const;
 
+export const MARKETING_PATHS = ["/", "/login", "/signup"] as const;
+
+export function isMarketingPath(pathname: string): boolean {
+  return MARKETING_PATHS.some((p) => pathname === p);
+}
+
 export function isMobileTabPath(pathname: string): boolean {
   return MOBILE_TAB_PATHS.some((p) => pathname.startsWith(p));
 }

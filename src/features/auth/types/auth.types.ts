@@ -32,12 +32,12 @@ export interface SignupPayload {
   zip_code?: string;
   phone_number: string;
   usage_purpose: string;
+  password: string;
 }
 
 export interface LoginPayload {
-  phone_number: string;
-  birth_yymmdd: string;
-  birth_gender_digit: string;
+  full_name: string;
+  password: string;
 }
 
 export interface JusoAddressItem {

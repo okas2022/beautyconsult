@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
           zip_code: payload.zip_code,
           phone_number: payload.phone_number ?? "",
           usage_purpose: payload.usage_purpose ?? "",
+          password: payload.password ?? "",
         },
         typeof payload.member_id === "string" ? payload.member_id : undefined,
       );
@@ -48,9 +49,8 @@ export async function POST(request: NextRequest) {
     if (action === "login") {
       const payload = body as LoginPayload;
       const member = await loginMember({
-        phone_number: payload.phone_number ?? "",
-        birth_yymmdd: payload.birth_yymmdd ?? "",
-        birth_gender_digit: payload.birth_gender_digit ?? "",
+        full_name: payload.full_name ?? "",
+        password: payload.password ?? "",
       });
       return NextResponse.json({ member });
     }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
     if (code === "NOT_FOUND") {
       return NextResponse.json(
-        { error: "일치하는 회원 정보가 없습니다." },
+        { error: "이름 또는 비밀번호가 올바르지 않습니다." },
         { status: 404 },
       );
     }

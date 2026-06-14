@@ -22,6 +22,8 @@ export function SignupPage() {
   const [address, setAddress] = useState<JusoAddressItem | null>(null);
   const [addressDetail, setAddressDetail] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [usagePurpose, setUsagePurpose] = useState(USAGE_PURPOSE_OPTIONS[0]);
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +31,14 @@ export function SignupPage() {
     e.preventDefault();
     if (!address?.roadAddr) {
       toast.error("도로명 주소를 검색해 선택해 주세요.");
+      return;
+    }
+    if (password.length < 8) {
+      toast.error("비밀번호는 8자 이상 입력해 주세요.");
+      return;
+    }
+    if (password !== passwordConfirm) {
+      toast.error("비밀번호 확인이 일치하지 않습니다.");
       return;
     }
 
@@ -50,6 +60,7 @@ export function SignupPage() {
           zip_code: address.zipNo,
           phone_number: phone,
           usage_purpose: usagePurpose,
+          password,
         }),
       });
       const data = await res.json();
@@ -152,6 +163,38 @@ export function SignupPage() {
             placeholder="01012345678"
             className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
             required
+          />
+        </label>
+
+        <div>
+          <span className="mb-1 block text-[11px] font-medium text-muted">
+            비밀번호 *
+          </span>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="8자 이상"
+            autoComplete="new-password"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+            required
+            minLength={8}
+          />
+        </div>
+
+        <label className="block">
+          <span className="mb-1 block text-[11px] font-medium text-muted">
+            비밀번호 확인 *
+          </span>
+          <input
+            type="password"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+            placeholder="비밀번호 재입력"
+            autoComplete="new-password"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+            required
+            minLength={8}
           />
         </label>
 

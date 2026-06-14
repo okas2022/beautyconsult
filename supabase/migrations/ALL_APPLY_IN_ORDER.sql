@@ -245,3 +245,7 @@ DO $$ BEGIN
   CREATE POLICY "Service role only member_profiles" ON member_profiles
     FOR ALL USING (false) WITH CHECK (false);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ========== 20250617000000_member_password.sql ==========
+ALTER TABLE member_profiles
+  ADD COLUMN IF NOT EXISTS password_hash TEXT;

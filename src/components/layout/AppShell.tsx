@@ -38,8 +38,7 @@ export function AppShell({ children }: AppShellProps) {
       <main
         className={cn(
           "flex min-h-0 flex-1 flex-col",
-          isTabPage && !isChat && MOBILE_TAB_BAR_PADDING_CLASS,
-          isImmersive && MOBILE_TAB_BAR_PADDING_CLASS,
+          !isMarketing && MOBILE_TAB_BAR_PADDING_CLASS,
           isChat || isImmersive
             ? "overflow-hidden"
             : isTabPage

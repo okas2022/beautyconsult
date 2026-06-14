@@ -2,13 +2,19 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, Sparkles, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronRight, LogOut, Sparkles, User } from "lucide-react";
 import { MembershipStatusCard } from "@/features/premium/components/MembershipStatusCard";
 import { AdSlot } from "@/features/ads/components/AdSlot";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import { usePremiumStore } from "@/features/premium/store/premiumStore";
-import { getPatientId } from "@/features/leads/store/leadModalStore";
+import { toast } from "sonner";
 
 export default function MyPage() {
+  const router = useRouter();
+  const member = useAuthStore((s) => s.member);
+  const mode = useAuthStore((s) => s.mode);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
   const isPremium = usePremiumStore((s) => s.isPremium);
   const membership = usePremiumStore((s) => s.membership);
   const refreshStatus = usePremiumStore((s) => s.refreshStatus);
@@ -17,19 +23,57 @@ export default function MyPage() {
     void refreshStatus();
   }, [refreshStatus]);
 
-  const patientShortId = getPatientId().slice(0, 8);
+  const isMember = mode === "member" && member !== null && !member.is_guest;
+  const isGuest = mode === "guest" && member?.is_guest;
+
+  const handleLogout = () => {
+    clearAuth();
+    toast.success("로그아웃되었습니다.");
+    router.push("/");
+  };
+
+  const displayName = isMember
+    ? member.full_name
+    : isGuest
+      ? "둘러보기"
+      : "게스트";
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 pt-6">
+    <div className="mx-auto w-full max-w-lg px-4 pt-6 pb-6">
       <div className="mb-6 flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground/[0.04]">
           <User className="h-7 w-7 text-muted" strokeWidth={1.5} />
         </div>
-        <div>
-          <p className="text-lg font-semibold text-foreground">마이페이지</p>
-          <p className="text-[11px] text-muted">ID ···{patientShortId}</p>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-lg font-semibold text-foreground">
+            {displayName}
+          </p>
+          <p className="text-[11px] text-muted">
+            {isMember
+              ? `휴대폰 ${member.phone_number.replace(/(\d{3})(\d{4})(\d{4})/, "$1-****-$3")}`
+              : isGuest
+                ? "둘러보기 모드 · 일부 기능 제한"
+                : "로그인하면 내 정보를 확인할 수 있습니다"}
+          </p>
         </div>
       </div>
+
+      {!isMember && !isGuest && (
+        <div className="mb-6 flex gap-2">
+          <Link
+            href="/login"
+            className="flex h-10 flex-1 items-center justify-center rounded-xl border border-border text-sm font-medium text-foreground"
+          >
+            로그인
+          </Link>
+          <Link
+            href="/signup"
+            className="flex h-10 flex-1 items-center justify-center rounded-xl bg-foreground text-sm font-semibold text-white"
+          >
+            회원가입
+          </Link>
+        </div>
+      )}
 
       <MembershipStatusCard
         membership={membership}
@@ -81,6 +125,17 @@ export default function MyPage() {
           </Link>
         ))}
       </nav>
+
+      {(isMember || isGuest) && (
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-border/60 bg-surface py-3.5 text-sm font-medium text-muted transition hover:border-border hover:text-foreground"
+        >
+          <LogOut className="h-4 w-4" />
+          로그아웃
+        </button>
+      )}
 
       <div className="mt-6 rounded-2xl border border-lavender/20 bg-lavender/5 p-4">
         <p className="text-xs font-semibold text-foreground">수익 모델 안내</p>

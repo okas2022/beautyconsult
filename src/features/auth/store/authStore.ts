@@ -27,7 +27,12 @@ export const useAuthStore = create<AuthState>()(
         }
         set({ member, mode });
       },
-      clearAuth: () => set({ member: null, mode: "none" }),
+      clearAuth: () => {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(PATIENT_ID_KEY);
+        }
+        set({ member: null, mode: "none" });
+      },
       syncPatientId: (memberId) => {
         if (typeof window !== "undefined") {
           localStorage.setItem(PATIENT_ID_KEY, memberId);

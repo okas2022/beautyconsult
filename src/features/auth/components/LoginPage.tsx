@@ -10,9 +10,8 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 export function LoginPage() {
   const router = useRouter();
   const setMember = useAuthStore((s) => s.setMember);
-  const [phone, setPhone] = useState("");
-  const [birthYymmdd, setBirthYymmdd] = useState("");
-  const [birthGenderDigit, setBirthGenderDigit] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,9 +23,8 @@ export function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "login",
-          phone_number: phone,
-          birth_yymmdd: birthYymmdd,
-          birth_gender_digit: birthGenderDigit,
+          full_name: fullName,
+          password,
         }),
       });
       const data = await res.json();
@@ -42,64 +40,46 @@ export function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-lg px-5 py-10">
+    <div className="mx-auto max-w-lg px-5 py-10 pb-24">
       <Link href="/" className="text-sm text-muted hover:text-foreground">
         ← 앱 소개
       </Link>
       <h1 className="mt-6 text-xl font-semibold text-foreground">로그인</h1>
       <p className="mt-1 text-sm text-muted">
-        가입 시 등록한 휴대폰 번호와 생년월일로 로그인합니다.
+        가입 시 설정한 이름과 비밀번호로 로그인합니다.
       </p>
 
       <form onSubmit={(e) => void handleSubmit(e)} className="mt-8 space-y-4">
         <label className="block">
           <span className="mb-1 block text-[11px] font-medium text-muted">
-            휴대폰 번호 *
+            이름 *
           </span>
           <input
-            type="tel"
-            inputMode="numeric"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="01012345678"
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="홍길동"
+            autoComplete="username"
             className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
             required
           />
         </label>
 
-        <div>
+        <label className="block">
           <span className="mb-1 block text-[11px] font-medium text-muted">
-            생년월일 · 주민번호 앞 6자리 + 뒷자리 첫 번째 *
+            비밀번호 *
           </span>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              value={birthYymmdd}
-              onChange={(e) =>
-                setBirthYymmdd(e.target.value.replace(/\D/g, "").slice(0, 6))
-              }
-              placeholder="YYMMDD"
-              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
-              required
-            />
-            <span className="text-muted">-</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={birthGenderDigit}
-              onChange={(e) =>
-                setBirthGenderDigit(e.target.value.replace(/\D/g, "").slice(0, 1))
-              }
-              placeholder="●"
-              className="w-14 rounded-xl border border-border bg-background px-3 py-2.5 text-center text-sm"
-              required
-            />
-            <span className="text-sm text-muted">●●●●●●</span>
-          </div>
-        </div>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="8자 이상"
+            autoComplete="current-password"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
+            required
+            minLength={8}
+          />
+        </label>
 
         <button
           type="submit"

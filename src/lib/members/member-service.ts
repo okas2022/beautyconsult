@@ -1,4 +1,9 @@
 import { randomUUID } from "crypto";
+import {
+  hashPassword,
+  validatePasswordStrength,
+  verifyPassword,
+} from "@/lib/auth/password";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateUser } from "@/lib/users/user-service";
 import type {
@@ -32,6 +37,8 @@ export function validateSignupPayload(payload: SignupPayload): string | null {
   if (!payload.full_name.trim() || payload.full_name.trim().length < 2) {
     return "이름을 2자 이상 입력해 주세요.";
   }
+  const passwordErr = validatePasswordStrength(payload.password ?? "");
+  if (passwordErr) return passwordErr;
   if (!/^\d{6}$/.test(payload.birth_yymmdd)) {
     return "생년월일 6자리(주민번호 앞자리)를 입력해 주세요.";
   }
@@ -52,15 +59,11 @@ export function validateSignupPayload(payload: SignupPayload): string | null {
 }
 
 export function validateLoginPayload(payload: LoginPayload): string | null {
-  const phone = normalizePhone(payload.phone_number);
-  if (!/^01[016789]\d{7,8}$/.test(phone)) {
-    return "올바른 휴대폰 번호를 입력해 주세요.";
+  if (!payload.full_name.trim() || payload.full_name.trim().length < 2) {
+    return "이름을 입력해 주세요.";
   }
-  if (!/^\d{6}$/.test(payload.birth_yymmdd)) {
-    return "생년월일 6자리를 입력해 주세요.";
-  }
-  if (!/^[1-4]$/.test(payload.birth_gender_digit)) {
-    return "주민번호 뒷자리 첫 번째 숫자(1~4)를 입력해 주세요.";
+  if (!payload.password) {
+    return "비밀번호를 입력해 주세요.";
   }
   return null;
 }
@@ -75,6 +78,7 @@ export async function signupMember(
   const phone = normalizePhone(payload.phone_number);
   const id = existingId ?? randomUUID();
   const supabase = createAdminClient();
+  const passwordHash = await hashPassword(payload.password);
 
   const { data: existingPhone } = await supabase
     .from("member_profiles")
@@ -97,6 +101,7 @@ export async function signupMember(
     zip_code: payload.zip_code?.trim() || null,
     phone_number: phone,
     usage_purpose: payload.usage_purpose.trim(),
+    password_hash: passwordHash,
     is_guest: false,
     guest_chat_count: 0,
     updated_at: now,
@@ -122,25 +127,33 @@ export async function loginMember(payload: LoginPayload): Promise<MemberProfile>
   const err = validateLoginPayload(payload);
   if (err) throw new Error(err);
 
-  const phone = normalizePhone(payload.phone_number);
   const supabase = createAdminClient();
+  const name = payload.full_name.trim();
 
   const { data, error } = await supabase
     .from("member_profiles")
     .select("*")
-    .eq("phone_number", phone)
-    .eq("birth_yymmdd", payload.birth_yymmdd)
-    .eq("birth_gender_digit", payload.birth_gender_digit)
-    .eq("is_guest", false)
-    .maybeSingle();
+    .eq("full_name", name)
+    .eq("is_guest", false);
 
   if (error) {
     console.error("[loginMember]", error);
     throw new Error("DB_ERROR");
   }
-  if (!data) throw new Error("NOT_FOUND");
 
-  return rowToMember(data as Record<string, unknown>);
+  const rows = (data ?? []) as Record<string, unknown>[];
+  if (rows.length === 0) throw new Error("NOT_FOUND");
+
+  for (const row of rows) {
+    const storedHash = row.password_hash as string | null | undefined;
+    if (!storedHash) continue;
+    const valid = await verifyPassword(payload.password, storedHash);
+    if (valid) {
+      return rowToMember(row);
+    }
+  }
+
+  throw new Error("NOT_FOUND");
 }
 
 export async function getMemberById(id: string): Promise<MemberProfile | null> {

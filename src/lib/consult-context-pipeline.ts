@@ -6,6 +6,10 @@ import {
   type YoutubeVideoRef,
 } from "./youtube-rag";
 import type { YoutubeChunk } from "./youtube-types";
+import {
+  hospitalChunksToVideoRefs,
+  retrieveHospitalChunks,
+} from "./knowledge/hospital-chunk-rag";
 
 /** RAG 검색 결과 + 프롬프트 주입용 메타데이터 */
 export interface RagRetrievalResult {
@@ -32,7 +36,7 @@ export interface ConsultPromptSlots {
 }
 
 const RAG_SLOT_EMPTY =
-  "(내부 참고 자료 없음 — PreFit AI 실장 톤으로 일반 상담 원칙만 적용. 확정 진단·수치는 대면 상담 시 안내)";
+  "(내부 참고 자료 없음 — PreFit AI 실장으로 성형·피부 상담 일반 원칙을 적용. 시술 설명·비용 구성 요소는 안내 가능. 확정 진단·개인별 금액은 대면 상담 시 안내)";
 
 const RAG_SLOT_START = "<<<RAG_TRANSCRIPT_CONTEXT_START>>>";
 const RAG_SLOT_END = "<<<RAG_TRANSCRIPT_CONTEXT_END>>>";
@@ -43,14 +47,34 @@ const RAG_SLOT_END = "<<<RAG_TRANSCRIPT_CONTEXT_END>>>";
  */
 export async function retrieveRagContext(
   query: string,
-  limit = 4
+  limit = 4,
+  hospitalId?: string,
 ): Promise<RagRetrievalResult> {
-  const retrieval = (await retrieveYoutubeChunks(query, limit, {
-    includeMeta: true,
-  })) as RetrieveChunksResult;
-  const chunks = retrieval.chunks;
+  let chunks: YoutubeChunk[] = [];
+  let dataSource: "db" | "file" = "file";
+  let searchMethods: Array<"vector_db" | "vector_local" | "lexical"> = [];
+
+  if (hospitalId) {
+    const hospitalChunks = await retrieveHospitalChunks(query, hospitalId, limit);
+    if (hospitalChunks.length) {
+      chunks = hospitalChunks;
+      searchMethods = ["lexical"];
+    }
+  }
+
+  if (!chunks.length) {
+    const retrieval = (await retrieveYoutubeChunks(query, limit, {
+      includeMeta: true,
+    })) as RetrieveChunksResult;
+    chunks = retrieval.chunks;
+    dataSource = retrieval.meta.dataSource;
+    searchMethods = retrieval.meta.searchMethods;
+  }
+
   const contextBlock = buildRagContextBlock(chunks);
-  const videoRefs = chunksToVideoRefs(chunks.slice(0, 3));
+  const videoRefs = hospitalId && chunks.length
+    ? hospitalChunksToVideoRefs(chunks.slice(0, 3))
+    : chunksToVideoRefs(chunks.slice(0, 3));
 
   return {
     chunks,
@@ -60,8 +84,8 @@ export async function retrieveRagContext(
       query,
       chunkCount: chunks.length,
       chunkIds: chunks.map((c) => c.id),
-      dataSource: retrieval.meta.dataSource,
-      searchMethods: retrieval.meta.searchMethods,
+      dataSource,
+      searchMethods,
     },
   };
 }
@@ -116,10 +140,10 @@ ${slots.userQuestion}`;
 }
 
 export const CONSULT_PERSONA = `당신은 PreFit 플랫폼의 AI 피부·성형 컨시어지 실장입니다.
-검증된 전문의 유튜브 데이터만을 근거로, 객관적이고 신뢰할 수 있는 상담을 제공합니다.
+10년 이상 경력의 성형외과 상담 실장처럼, 환자의 질문에 직접·실질적으로 답합니다.
 
 [말투 — 필수]
-- 1인칭: "PreFit에서는", "검증된 전문의 자료 기준으로", "상담 시 확인하시면"처럼 신뢰 기반 컨시어지 시점으로 답합니다.
+- 1인칭: "PreFit에서는", "상담 시 확인하시면", "저희가 안내드리는 기준으로는"처럼 신뢰 기반 컨시어지 시점으로 답합니다.
 - 환자의 불안감을 어루만지는 공감적인 어조를 유지합니다.
 - 의학적 사실을 설명할 때는 명확하고 전문적인 용어를 사용합니다.
 - 문장 끝은 "~답니다", "~해보세요", "~드립니다", "~하시면 됩니다"처럼 부드럽게 맺습니다.
@@ -129,13 +153,18 @@ export const CONSULT_PERSONA = `당신은 PreFit 플랫폼의 AI 피부·성형 
 - 질문 의도를 정확히 파악하고, 그 질문에 직접 답합니다.
 - 확정 진단·수술 강요 금지. "~일 수 있습니다", "대면 상담 시 확인이 필요합니다" 톤을 씁니다.
 
-[내부 참고 자료 규칙 — 환각 방어, 환자에게 노출 금지]
-- ${RAG_SLOT_START} 와 ${RAG_SLOT_END} 사이 자료는 내부 참고용입니다. 내용을 근거로 답하되, 출처(영상·대본·학습 데이터)는 환자에게 말하지 않습니다.
-- 참고 자료에 없는 내용은 지어내지 말고, "대면 전문의 상담 시 개별적으로 안내해 드리는 부분입니다"처럼 자연스럽게 연결합니다.
+[내부 참고 자료 규칙 — 환자에게 노출 금지]
+- ${RAG_SLOT_START} 와 ${RAG_SLOT_END} 사이 자료는 내부 참고용입니다. 있으면 우선 반영하되, 출처(영상·대본·학습 데이터·유튜브)는 환자에게 절대 말하지 않습니다.
+- 참고 자료가 부족하거나 질문과 완전히 맞지 않아도, PreFit AI 실장으로서 성형·피부 상담에서 흔히 안내하는 일반 정보(시술 종류, 회복 경과, 비용에 영향을 주는 항목, 부작용·주의점)를 설명합니다.
+- 확정 진단·개인별 정확한 금액·수술 적합 여부는 "대면 전문의 상담 시 개별적으로 안내해 드리는 부분입니다"처럼 자연스럽게 연결합니다. 허구의 병원명·원장명·정확한 가격 수치는 만들지 마세요.
 
 [절대 금지 표현 — 고객 경험]
-- "원장님 영상에서는", "영상에 따르면", "영상에서는 ~ 다루어져", "설명되어 있지 않", "영상에 없", "학습 영상", "대본에 없" 등 영상·자료 부재를 언급하지 마세요.
-- 질문과 참고 자료가 완전히 맞지 않아도, "영상에는 없다"고 말하지 말고 PreFit AI 실장으로서 알고 있는 범위 내에서 답하거나 대면 상담을 권유하세요.
+- "유튜브 대본", "대본 데이터", "데이터에 없", "데이터에 포함", "정확한 금액을 알려드리기 어렵", "원장님 영상에서는", "영상에 따르면", "설명되어 있지 않", "영상에 없", "학습 영상", "대본에 없" 등 자료·영상 부재·한계를 언급하지 마세요.
+- 질문에 답할 수 없다고 거절하지 말고, 알고 있는 범위에서 도움이 되는 정보를 먼저 제공한 뒤 필요 시 대면 상담을 권유하세요.
+
+[가격 질문]
+- [비급여 가격 참고] 데이터가 있으면 자연스럽게 범위를 안내합니다.
+- 가격 데이터가 없어도, 마취비·부가세·재료대·단독/복합 시술 여부·지역·난이도 등 비용에 영향을 주는 요소를 설명하고, 정확한 견적은 대면 상담에서 확인하도록 안내합니다.
 
 [답변 규칙]
 1) 3~6문장. 공감 1문장 + 구체 정보 2문장 이상 필수.

@@ -34,6 +34,7 @@ export interface ConsultPriceContext {
 
 export interface ConsultChatInput {
   userText: string;
+  hospitalId?: string;
   category?: string;
   procedureName?: string;
   concernTags?: string[];
@@ -93,6 +94,55 @@ function getAI() {
 
 function formatPrice(n: number): string {
   return n.toLocaleString("ko-KR");
+}
+
+const FORBIDDEN_REPLY_PATTERNS = [
+  /유튜브\s*대본/i,
+  /대본\s*데이터/i,
+  /데이터에\s*(포함|없)/i,
+  /정확한\s*금액.*어렵/i,
+  /설명되어\s*있지\s*않/i,
+  /영상에\s*(없|포함)/i,
+  /대본에\s*없/i,
+  /학습\s*영상/i,
+  /원장님\s*영상/i,
+];
+
+function replyContainsForbiddenMeta(text: string): boolean {
+  return FORBIDDEN_REPLY_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function buildEpicanthoplastyPriceFallback(): string {
+  return (
+    "앞트임 비용 문의 주셔서 감사합니다. 앞트임은 단독으로 진행하기보다 쌍꺼풀·눈매교정과 함께 계획하는 경우가 많아, 조합 시술 여부에 따라 체감 금액이 달라집니다. " +
+    "또 마취비·부가세·재료대·봉합·사후관리 항목 포함 여부에 따라 견적이 달라지니, 상담 시 항목별로 꼭 확인해보세요. " +
+    "눈 사이 간격·앞쪽 전막(빨간 부분) 노출 정도에 따라 시술 적합성도 달라지므로, 정확한 견적과 방법은 대면 전문의 상담에서 안내받으시면 됩니다."
+  );
+}
+
+function sanitizeConsultReply(reply: string, userText: string): string {
+  if (!replyContainsForbiddenMeta(reply)) return reply;
+
+  const text = userText.toLowerCase();
+  if (/앞트임|뒤트임|밑트임|트임/.test(text) && /비용|가격|얼마|견적/.test(text)) {
+    return buildEpicanthoplastyPriceFallback();
+  }
+  if (/비용|가격|얼마|견적/.test(text)) {
+    return (
+      "비용 문의 주셔서 감사합니다. 같은 시술이라도 마취 방식, 부가세·재료대 포함 여부, 단독/복합 시술, 난이도에 따라 체감 금액이 달라집니다. " +
+      "상담 시 견적 항목을 하나씩 확인하시면 불필요한 오해를 줄일 수 있습니다. 개인별 정확한 금액은 대면 전문의 상담에서 안내해 드리는 것이 가장 정확합니다."
+    );
+  }
+  if (/앞트임|뒤트임|밑트임|트임/.test(text)) {
+    return (
+      "트임 수술 문의 주셔서 감사합니다. 앞트임은 눈 사이 간격·앞쪽 노출·쌍꺼풀 라인과의 조화를 위해 검토하는 경우가 많고, 뒤트임은 눈꼬리 각도와 길이감에 영향을 줍니다. " +
+      "과도한 트임은 비율이 어색해질 수 있어, 필요한 범위만 설계하는 것이 중요합니다. 본인에게 맞는 방법과 범위는 대면 상담 시 눈 구조를 확인한 뒤 결정하시면 됩니다."
+    );
+  }
+  return reply.replace(
+    /[^.!?]*(?:유튜브|대본|데이터에|영상에|설명되어)[^.!?]*[.!?]?/gi,
+    "",
+  ).trim() || "질문 주셔서 감사합니다. 시술 종류, 회복, 비용 구성, 부작용 중 궁금하신 부분을 조금 더 알려주시면, 그에 맞춰 차근차근 설명드리겠습니다.";
 }
 
 function buildPriceContextBlock(ctx: ConsultPriceContext): string {
@@ -191,6 +241,29 @@ function buildFallbackReply(
       source: "fallback",
     };
   }
+  if (/앞트임|뒤트임|밑트임|트임/.test(text) && /비용|가격|얼마|견적/.test(text)) {
+    return {
+      reply: buildEpicanthoplastyPriceFallback(),
+      intent: "price",
+      nextActions: ["질문 계속하기", "💰 가격 문의"],
+      videoRefs,
+      ragUsed: Boolean(videoRefs?.length),
+      ragMeta,
+      source: "fallback",
+    };
+  }
+  if (/앞트임|뒤트임|밑트임|트임/.test(text)) {
+    return {
+      reply:
+        "트임 수술 문의 주셔서 감사합니다. 앞트임은 눈 사이 간격·앞쪽 노출·쌍꺼풀 라인과의 조화를 위해 검토하는 경우가 많고, 뒤트임은 눈꼬리 각도와 길이감에 영향을 줍니다. 과도한 트임은 비율이 어색해질 수 있어, 필요한 범위만 설계하는 것이 중요합니다. 본인에게 맞는 방법과 범위는 대면 상담 시 눈 구조를 확인한 뒤 결정하시면 됩니다.",
+      intent: "qa",
+      nextActions: ["질문 계속하기", "바로 분석 시작"],
+      videoRefs,
+      ragUsed: Boolean(videoRefs?.length),
+      ragMeta,
+      source: "fallback",
+    };
+  }
   if (/쌍꺼풀|눈매|인아웃|세미아웃|아웃라인/.test(text)) {
     return {
       reply:
@@ -215,13 +288,26 @@ function buildFallbackReply(
   };
 }
 
+function finalizeConsultResult(
+  result: ConsultChatResult,
+  userText: string,
+): ConsultChatResult {
+  return {
+    ...result,
+    reply: sanitizeConsultReply(result.reply, userText),
+  };
+}
+
 export async function generateConsultReply(input: ConsultChatInput): Promise<ConsultChatResult> {
   // 파이프라인: 질문 → DB 검색 → RAG 슬롯 포맷 → 프롬프트 조립
-  const rag = await retrieveRagContext(input.userText, 4);
+  const rag = await retrieveRagContext(input.userText, 4, input.hospitalId);
   const ragMeta = toRagMeta(rag);
 
   if (!process.env.GEMINI_API_KEY) {
-    return buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta);
+    return finalizeConsultResult(
+      buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta),
+      input.userText,
+    );
   }
 
   const userPrompt = assembleConsultPrompt(CONSULT_PERSONA, {
@@ -252,7 +338,7 @@ export async function generateConsultReply(input: ConsultChatInput): Promise<Con
             reply: {
               type: "string",
               description:
-                "한국어 상담 답변 3~6문장. PreFit AI 실장 1인칭. 영상·대본 출처 언급 금지. 없는 내용은 지어내지 말 것.",
+                "한국어 상담 답변 3~6문장. PreFit AI 실장 1인칭. 영상·대본·데이터 부재 언급 금지. 가격·시술은 일반 상담 정보로 설명하고 확정 수치는 대면 상담으로 연결.",
             },
             intent: {
               type: "string",
@@ -274,24 +360,36 @@ export async function generateConsultReply(input: ConsultChatInput): Promise<Con
     const finish = response.candidates?.[0]?.finishReason;
     if (finish === "SAFETY" || finish === "RECITATION" || !response.text?.trim()) {
       console.warn("[consult-gemini] blocked or empty:", finish);
-      return buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta);
+      return finalizeConsultResult(
+        buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta),
+        input.userText,
+      );
     }
 
     const parsed = parseConsultJson(response.text);
     if (!parsed) {
       console.warn("[consult-gemini] JSON parse failed, finish:", finish);
-      return buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta);
+      return finalizeConsultResult(
+        buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta),
+        input.userText,
+      );
     }
 
-    return {
-      ...parsed,
-      videoRefs: rag.videoRefs.length ? rag.videoRefs : undefined,
-      ragUsed: rag.chunks.length > 0,
-      ragMeta,
-      source: "gemini",
-    };
+    return finalizeConsultResult(
+      {
+        ...parsed,
+        videoRefs: rag.videoRefs.length ? rag.videoRefs : undefined,
+        ragUsed: rag.chunks.length > 0,
+        ragMeta,
+        source: "gemini",
+      },
+      input.userText,
+    );
   } catch (error) {
     console.error("[consult-gemini] error:", error);
-    return buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta);
+    return finalizeConsultResult(
+      buildFallbackReply(input.userText, input.priceContext, rag.videoRefs, ragMeta),
+      input.userText,
+    );
   }
 }

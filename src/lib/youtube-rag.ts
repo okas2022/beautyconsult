@@ -262,8 +262,8 @@ function truncateRagText(text: string, max = RAG_CHUNK_TEXT_MAX): string {
 export function buildRagContextBlock(chunks: YoutubeChunk[]): string {
   if (!chunks.length) return "";
   const lines = [
-    "[PreFit 검증 전문의 참고 자료 — 답변 근거로만 사용, 환자에게 출처 언급 금지]",
-    "[제약] 자료에 없는 내용은 지어내지 말 것. 부족한 부분은 '대면 전문의 상담 시 안내'로 연결. 영상·대본 부재 표현 금지.",
+    "[PreFit 내부 참고 자료 — 답변 근거로 우선 사용, 환자에게 출처·대본·영상 언급 금지]",
+    "[제약] 참고 자료가 부족하면 상담 실장으로서 일반적인 시술·비용 구성 정보를 설명. 확정 수치·진단은 대면 상담으로 연결. 자료 부재·데이터 없음 표현 금지.",
   ];
   for (const c of chunks.slice(0, 4)) {
     const title = c.title?.trim() ? ` | ${c.title.slice(0, 40)}` : "";

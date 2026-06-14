@@ -156,7 +156,7 @@ export async function loadHospitalRagContext(
 
   if (!subscribed) {
     return {
-      context: "(구독하지 않은 병원 — RAG 검색 대상 영상 없음)",
+      context: "",
       videos: [],
       source: "none",
       subscribed: false,
@@ -167,7 +167,7 @@ export async function loadHospitalRagContext(
 
   if (!knowledge.length) {
     return {
-      context: `(등록된 ${catalog?.name ?? "병원"} 유튜브 데이터 없음)`,
+      context: "",
       videos: [],
       source: "none",
       subscribed: true,

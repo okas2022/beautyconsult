@@ -50,7 +50,7 @@ export async function loadVideosKnowledge(
 
 export function formatKnowledgeAsContext(videos: VideoKnowledge[]): string {
   if (!videos.length) {
-    return "(유튜브 대본 데이터 없음)";
+    return "";
   }
 
   const blocks = videos.map((video) => {

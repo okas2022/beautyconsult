@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { mergeVideoRefs } from "@/lib/chat/parse-youtube-links";
 import {
-  extractVideoRefsFromText,
-  mergeVideoRefs,
-  videoKnowledgeToRefs,
-} from "@/lib/chat/parse-youtube-links";
-import { matchProductsBySymptoms } from "@/lib/commerce/product-catalog";
-import { generateChatReply } from "@/lib/gemini/chat-service";
+  detectSymptomsFromText,
+  matchProductsBySymptoms,
+} from "@/lib/commerce/product-catalog";
 import {
-  loadHospitalKnowledgeForRefs,
-  loadHospitalRagContext,
-} from "@/lib/knowledge/hospital-rag";
+  generateConsultReply,
+  type ConsultChatMessage,
+} from "@/lib/consult-gemini";
 import { getTenantHospitalIdFromRequest } from "@/lib/tenant/server";
 import { applyAdDisclosureToVideoRefs } from "@/lib/hospitals/ad-disclosure";
+import { resolvePriceContextForQuery } from "@/lib/pricing/resolve-price-context";
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,9 +32,9 @@ export async function POST(request: NextRequest) {
                 (m as { role: string }).role === "assistant") &&
               typeof (m as { content: unknown }).content === "string",
           )
-          .slice(-6)
+          .slice(-8)
           .map((m: { role: string; content: string }) => ({
-            role: m.role as "user" | "assistant",
+            role: (m.role === "user" ? "user" : "agent") as ConsultChatMessage["role"],
             content: m.content.trim(),
           }))
       : [];
@@ -44,29 +43,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "message is required" }, { status: 400 });
     }
 
-    const [result, knowledge, rag] = await Promise.all([
-      generateChatReply({ message, history, hospitalId }),
-      loadHospitalKnowledgeForRefs(hospitalId),
-      loadHospitalRagContext(message, hospitalId),
-    ]);
+    const priceContext = resolvePriceContextForQuery(message);
 
-    const fromReply = extractVideoRefsFromText(result.reply, knowledge);
-    const fromRag = videoKnowledgeToRefs(rag.videos);
+    const result = await generateConsultReply({
+      userText: message,
+      hospitalId,
+      history,
+      priceContext,
+    });
+
     const videoRefs = applyAdDisclosureToVideoRefs(
-      mergeVideoRefs(fromReply, fromRag),
+      mergeVideoRefs(result.videoRefs ?? [], []),
       hospitalId,
     );
-    const products = matchProductsBySymptoms(result.symptomKeywords);
+    const symptomKeywords = detectSymptomsFromText(message);
+    const products = matchProductsBySymptoms(symptomKeywords);
+
+    const nextActions =
+      result.nextActions?.length
+        ? result.nextActions
+        : ["질문 계속하기", "병원 정보 자세히", "원장님께 예약 / 상담 신청"];
 
     return NextResponse.json({
       reply: result.reply,
       videoRefs: videoRefs.length ? videoRefs : undefined,
-      symptomKeywords: result.symptomKeywords.length
-        ? result.symptomKeywords
-        : undefined,
+      symptomKeywords: symptomKeywords.length ? symptomKeywords : undefined,
       products: products.length ? products : undefined,
-      nextActions: ["병원 정보 자세히", "원장님께 예약 / 상담 신청"],
-      model: result.model,
+      nextActions,
       source: result.source,
     });
   } catch (error) {
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
       {
         error: "internal_error",
         reply:
-          "일시적인 오류가 발생했습니다. 잠시 후 다시 질문해 주시면, 유튜브 답변을 바탕으로 안내드리겠습니다.",
+          "일시적인 오류가 발생했습니다. 잠시 후 다시 질문해 주시면, 상담 실장이 차근차근 안내드리겠습니다.",
         source: "fallback",
       },
       { status: 500 },

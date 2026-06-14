@@ -128,7 +128,7 @@ function buildFallbackReply(message: string): GenerateChatReplyResult {
   } else {
     reply =
       "질문 주셔서 감사합니다. 눈·코·가슴·회복·비용 중 어떤 부분이 가장 궁금하신지 알려주시면, " +
-      "원장님 대본 자료를 바탕으로 차근차근 설명드리겠습니다.";
+      "유튜브 답변을 바탕으로 차근차근 설명드리겠습니다.";
   }
 
   return {

@@ -44,7 +44,7 @@ export interface PlanFeature {
 export const PLAN_FEATURE_COMPARISON: PlanFeature[] = [
   {
     id: "chat",
-    label: "AI 병원 상담 (유튜브 RAG)",
+    label: "AI 병원 상담 (유튜브 답변 제공)",
     free: true,
     premium: true,
   },

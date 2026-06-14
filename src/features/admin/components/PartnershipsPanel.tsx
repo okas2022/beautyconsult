@@ -86,7 +86,7 @@ export function PartnershipsPanel() {
 
       <p className="text-[11px] leading-relaxed text-muted">
         리드가 접수되면 병원별로 CPA/CPL 수수료를 정산합니다. 제휴 상태가
-        prospect인 병원은 RAG·리퍼 데모만 제공되며, active 전환 후 실제 정산이
+        prospect인 병원은 유튜브 답변·리퍼 데모만 제공되며, active 전환 후 실제 정산이
         시작됩니다.
       </p>
     </div>

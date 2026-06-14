@@ -39,7 +39,7 @@ export const HOSPITAL_PROFILES: Record<string, HospitalProfile> = {
     phone: "02-1234-5678",
     website: "https://www.withps.co.kr",
     hours: "평일 10:00–19:00 · 토 10:00–16:00",
-    highlights: ["눈·코·가슴 통합 상담", "유튜브 Q&A RAG 연동", "회복·비용 투명 안내"],
+    highlights: ["눈·코·가슴 통합 상담", "유튜브 Q&A 답변 제공", "회복·비용 투명 안내"],
     doctors: [
       {
         id: "with-1",
@@ -75,7 +75,7 @@ export const HOSPITAL_PROFILES: Record<string, HospitalProfile> = {
     phone: "02-3497-0000",
     website: "https://www.idhospital.com",
     hours: "연중무휴 10:00–19:00 (부서별 상이)",
-    highlights: ["눈·코·윤곽·가슴 원스톱", "다국어 상담", "대용량 YouTube RAG"],
+    highlights: ["눈·코·윤곽·가슴 원스톱", "다국어 상담", "풍부한 유튜브 답변"],
     doctors: [
       {
         id: "id-1",
@@ -111,7 +111,7 @@ export const HOSPITAL_PROFILES: Record<string, HospitalProfile> = {
     phone: "02-515-0000",
     website: "https://www.daprs.com",
     hours: "평일 10:00–19:00 · 토 10:00–15:00",
-    highlights: ["쇼츠·브이로그 RAG", "눈·코·가슴", "MZ 트렌드 디자인"],
+    highlights: ["쇼츠·브이로그 답변", "눈·코·가슴", "MZ 트렌드 디자인"],
     doctors: [
       {
         id: "da-1",

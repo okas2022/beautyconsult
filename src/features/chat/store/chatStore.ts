@@ -13,7 +13,7 @@ const WELCOME_MESSAGE: ChatMessage = {
   id: "welcome",
   role: "assistant",
   content:
-    "안녕하세요, PreFit AI 실장입니다. 상단에서 병원을 선택하면 위치·홈페이지·원장 프로필을 확인할 수 있어요. 피부·성형 고민을 편하게 말씀해 주시면, 해당 병원 유튜브 자료 구간과 함께 답변드립니다.",
+    "안녕하세요, PreFit AI 실장입니다. 상단에서 병원을 선택하면 위치·홈페이지·원장 프로필을 확인할 수 있어요. 피부·성형 고민을 편하게 말씀해 주시면, 해당 병원 유튜브 답변과 영상 구간을 함께 안내해 드립니다.",
   timestamp: new Date(),
   nextActions: ["병원 정보 자세히"],
 };

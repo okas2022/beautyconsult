@@ -104,7 +104,7 @@ export function ChatInterface() {
           상담하기
         </h1>
         <p className="mt-0.5 text-[11px] text-muted">
-          {selectedHospital.name} 유튜브 RAG · AI 실장 상담
+          {selectedHospital.name} · 유튜브 답변 제공 · AI 실장 상담
         </p>
       </div>
 

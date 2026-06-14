@@ -20,14 +20,14 @@ function AdminDashboardContent() {
     {
       href: `/admin/subscription${q}`,
       icon: CreditCard,
-      title: "RAG Pro 구독",
-      description: "병원별 SaaS 구독 결제·활성화",
+      title: "유튜브 답변 Pro 구독",
+      description: "병원별 유튜브 답변 데이터 · AI 상담 (B2B SaaS)",
     },
     {
       href: `/admin/videos${q}`,
       icon: Play,
-      title: "유튜브 RAG 관리",
-      description: "유튜브 링크 업로드 · 자막 RAG 등록",
+      title: "유튜브 답변 관리",
+      description: "유튜브 링크 업로드 · 답변 데이터 등록",
     },
     {
       href: `/admin/leads${q}`,

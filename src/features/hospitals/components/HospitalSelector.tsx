@@ -56,7 +56,7 @@ export function HospitalSelector({ className, compact }: HospitalSelectorProps) 
       <div className="flex items-center gap-1.5 px-1">
         <Building2 className="h-3.5 w-3.5 text-mint-dark" />
         <span className="text-[11px] font-medium text-muted">
-          제휴 병원 네트워크 — 선택 병원 유튜브만 RAG 추천
+          제휴 병원 네트워크 — 선택한 병원 유튜브 답변만 제공
         </span>
       </div>
 

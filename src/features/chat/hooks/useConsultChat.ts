@@ -50,7 +50,7 @@ export function useConsultChat() {
         addMessage({
           role: "assistant",
           content:
-            "일시적인 오류가 발생했습니다. 잠시 후 다시 질문해 주시면, 원장님 대본 자료를 바탕으로 답변드리겠습니다.",
+            "일시적인 오류가 발생했습니다. 잠시 후 다시 질문해 주시면, 유튜브 답변을 바탕으로 안내드리겠습니다.",
         });
         return false;
       } finally {

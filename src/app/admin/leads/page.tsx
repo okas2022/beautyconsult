@@ -24,7 +24,7 @@ export default function AdminLeadsPage() {
             href="/admin/videos"
             className="rounded-full border border-border px-3 py-1.5 text-xs text-muted hover:text-foreground"
           >
-            유튜브 RAG →
+            유튜브 답변 관리 →
           </Link>
           <Link
             href="/admin/partnerships"

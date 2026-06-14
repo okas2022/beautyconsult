@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       hospital,
       plan: {
-        name: "RAG Pro",
+        name: "유튜브 답변 Pro",
         priceKrw: 990_000,
         billingCycle: "monthly",
       },
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const updated = await updateHospitalSubscription(hospitalId, true);
     return NextResponse.json({
       hospital: updated,
-      message: "RAG Pro 구독이 활성화되었습니다. (PoC 결제 시뮬레이션)",
+      message: "유튜브 답변 Pro 구독이 활성화되었습니다. (PoC 결제 시뮬레이션)",
     });
   } catch (error) {
     console.error("[api/admin/subscription] POST error:", error);

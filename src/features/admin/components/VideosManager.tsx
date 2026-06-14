@@ -71,7 +71,7 @@ export function VideosManager() {
         toast.error("등록 실패", { description: data.error });
         return;
       }
-      toast.success("유튜브 영상이 RAG에 등록되었습니다.");
+      toast.success("유튜브 영상이 답변 데이터에 등록되었습니다.");
       setUrl("");
       void fetchVideos();
     } catch {
@@ -103,9 +103,9 @@ export function VideosManager() {
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">유튜브 RAG 관리</h1>
+          <h1 className="text-xl font-semibold tracking-tight">유튜브 답변 관리</h1>
           <p className="mt-1 text-sm text-muted">
-            B2B 구독 병원 전용 — 등록된 영상만 AI 상담 RAG에 포함됩니다
+            B2B 구독 병원 전용 — 등록된 영상만 AI 상담 답변에 포함됩니다
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -153,7 +153,7 @@ export function VideosManager() {
           <>
             <span className="font-semibold">{hospital.name}</span>
             {" · "}
-            {hospital.is_subscribed ? "✓ RAG 구독 활성" : "⚠ 구독 비활성 — 영상 등록 불가"}
+            {hospital.is_subscribed ? "✓ 유튜브 답변 구독 활성" : "⚠ 구독 비활성 — 영상 등록 불가"}
           </>
         ) : (
           "병원 정보를 불러오는 중..."
@@ -190,7 +190,7 @@ export function VideosManager() {
           </button>
         </div>
         <p className="mt-2 text-[11px] text-muted">
-          자막 추출 후 hospital_videos 테이블에 저장 · AI 채팅 RAG 검색 대상
+          자막 추출 후 hospital_videos 테이블에 저장 · AI 상담 유튜브 답변 검색 대상
         </p>
       </form>
 

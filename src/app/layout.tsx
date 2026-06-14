@@ -13,7 +13,7 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "PreFit — AI 피부·성형 컨시어지",
   description:
-    "검증된 전문의 유튜브 데이터 기반 AI 상담 플랫폼. 신뢰할 수 있는 피부·성형 정보를 제공합니다.",
+    "검증된 전문의 유튜브 답변 기반 AI 상담 플랫폼. 신뢰할 수 있는 피부·성형 정보를 제공합니다.",
   keywords: ["피부", "성형", "AI 상담", "PreFit", "뷰티 컨설팅"],
   openGraph: {
     title: "PreFit — AI 피부·성형 컨시어지",

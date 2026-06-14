@@ -75,9 +75,9 @@ export function SubscriptionPanel() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold tracking-tight">RAG Pro 구독</h1>
+        <h1 className="text-xl font-semibold tracking-tight">유튜브 답변 Pro 구독</h1>
         <p className="mt-1 text-sm text-muted">
-          병원별 유튜브 RAG 검색 · AI 상담 데이터 격리 (B2B SaaS)
+          병원별 유튜브 답변 제공 · AI 상담 데이터 격리 (B2B SaaS)
         </p>
       </div>
 
@@ -130,12 +130,12 @@ export function SubscriptionPanel() {
             </div>
             <p className="text-sm text-muted">
               {hospital?.is_subscribed
-                ? "✓ RAG Pro 구독 활성 — 해당 병원 유튜브 DB만 AI 검색"
-                : "구독 전 — RAG 검색 비활성, 영상 등록 불가"}
+                ? "✓ 유튜브 답변 Pro 활성 — 해당 병원 영상 답변만 AI 검색"
+                : "구독 전 — 유튜브 답변 비활성, 영상 등록 불가"}
             </p>
             <ul className="mt-4 space-y-1.5 text-xs text-muted">
               <li>· 병원별 hospital_videos 격리</li>
-              <li>· /api/chat RAG 필터 (tenant ID)</li>
+              <li>· 병원별 유튜브 답변 필터 (tenant ID)</li>
               <li>· 무제한 유튜브 링크 등록</li>
             </ul>
           </div>
@@ -143,7 +143,7 @@ export function SubscriptionPanel() {
           <div className="rounded-2xl border border-border bg-surface p-6">
             <div className="mb-2 flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-foreground" />
-              <span className="font-semibold">RAG Pro</span>
+              <span className="font-semibold">유튜브 답변 Pro</span>
             </div>
             <p className="text-2xl font-bold">
               ₩990,000

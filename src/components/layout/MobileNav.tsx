@@ -27,25 +27,28 @@ export function MobileNav() {
               key={href}
               href={href}
               className={cn(
-                "relative flex flex-1 flex-col items-center gap-0.5 py-2.5 transition-colors",
+                "relative flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors",
                 isActive ? "text-foreground" : "text-muted hover:text-foreground/80",
               )}
             >
+              {isActive && (
+                <span
+                  className="absolute top-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-mint-dark"
+                  aria-hidden
+                />
+              )}
               <Icon
                 className={cn("h-5 w-5", isActive && "text-mint-dark")}
                 strokeWidth={isActive ? 2.25 : 1.75}
               />
               <span
                 className={cn(
-                  "text-[10px] font-medium",
+                  "text-[10px] font-medium leading-none",
                   isActive && "font-semibold text-foreground",
                 )}
               >
                 {label}
               </span>
-              {isActive && (
-                <span className="absolute bottom-[calc(env(safe-area-inset-bottom)+4px)] h-0.5 w-8 rounded-full bg-foreground/80" />
-              )}
             </Link>
           );
         })}

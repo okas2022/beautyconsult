@@ -71,6 +71,14 @@ export async function PUT(request: NextRequest) {
         { status: 400 },
       );
     }
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error && error.message.includes("ad_placements")
+            ? "ad_placements 테이블이 없습니다. Supabase SQL Editor에서 마이그레이션을 적용해 주세요."
+            : "Update failed",
+      },
+      { status: 500 },
+    );
   }
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ImageIcon, Loader2, Megaphone, Save, Video } from "lucide-react";
+import { ImageIcon, Loader2, Save, Upload, Video } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminKey } from "@/features/admin/store/adminAuthStore";
 import type {
@@ -13,12 +13,19 @@ import type {
 import { ADMIN_HEADER } from "@/lib/admin/auth";
 import { cn } from "@/lib/utils";
 
+const ACCEPT_BY_TYPE: Record<AdMediaType, string> = {
+  image: "image/jpeg,image/png,image/webp,image/gif",
+  video: "video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov",
+};
+
 export function AdsManager() {
   const adminKey = useAdminKey();
   const [placements, setPlacements] = useState<AdPlacement[]>([]);
   const [drafts, setDrafts] = useState<Record<string, AdPlacement>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const headers = {
     [ADMIN_HEADER]: adminKey,
@@ -57,12 +64,68 @@ export function AdsManager() {
     }));
   };
 
+  const handleUpload = async (id: AdPlacementId, file: File) => {
+    const draft = drafts[id];
+    const inferredType: AdMediaType = file.type.startsWith("video/")
+      ? "video"
+      : "image";
+    const mediaType = draft?.media_type ?? inferredType;
+
+    setUploadingId(id);
+    try {
+      const planRes = await fetch("/api/admin/ads/upload", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          placement_id: id,
+          filename: file.name,
+          content_type: file.type,
+          media_type: mediaType,
+          file_size: file.size,
+        }),
+      });
+      const planData = await planRes.json();
+      if (!planRes.ok) {
+        toast.error("업로드 실패", { description: planData.error });
+        return;
+      }
+
+      const putRes = await fetch(planData.signedUrl as string, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+          "x-upsert": "true",
+        },
+        body: file,
+      });
+
+      if (!putRes.ok) {
+        toast.error("Storage 업로드 실패", {
+          description: `HTTP ${putRes.status} — Storage 버킷(ad-media) 마이그레이션을 확인해 주세요.`,
+        });
+        return;
+      }
+
+      updateDraft(id, {
+        media_type: mediaType,
+        media_url: planData.publicUrl as string,
+      });
+      toast.success("미디어가 업로드되었습니다. 저장 버튼을 눌러 반영해 주세요.");
+    } catch {
+      toast.error("업로드 중 네트워크 오류");
+    } finally {
+      setUploadingId(null);
+      const input = fileInputRefs.current[id];
+      if (input) input.value = "";
+    }
+  };
+
   const handleSave = async (id: AdPlacementId) => {
     const draft = drafts[id];
     if (!draft) return;
 
     if (draft.is_enabled && !draft.media_url?.trim()) {
-      toast.error("ON 상태에서는 미디어 URL을 입력해 주세요.");
+      toast.error("ON 상태에서는 미디어를 업로드하거나 URL을 입력해 주세요.");
       return;
     }
 
@@ -82,7 +145,11 @@ export function AdsManager() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error("저장 실패", { description: data.error });
+        const hint =
+          data.error === "Update failed"
+            ? "ad_placements 테이블이 없을 수 있습니다. Supabase SQL Editor에서 ALL_APPLY_IN_ORDER.sql을 적용해 주세요."
+            : data.error;
+        toast.error("저장 실패", { description: hint });
         return;
       }
       toast.success(`${draft.label} 저장됨`);
@@ -113,16 +180,21 @@ export function AdsManager() {
       <div className="rounded-xl border border-mint/20 bg-mint/5 p-4 text-[12px] leading-relaxed text-muted">
         <p className="font-medium text-foreground">앱 내 광고 슬롯</p>
         <p className="mt-1">
-          각 위치별 <strong className="text-foreground">ON/OFF</strong>와 미디어 URL을
-          설정합니다. OFF이거나 미디어가 없으면 앱에서 해당 영역이{" "}
-          <strong className="text-foreground">완전히 숨겨져</strong> 레이아웃 공백 없이
-          표시됩니다.
+          각 위치별 <strong className="text-foreground">ON/OFF</strong>와 이미지·동영상을
+          설정합니다. <strong className="text-foreground">파일 업로드</strong> 또는 URL
+          입력 후 저장하세요. OFF이거나 미디어가 없으면 앱에서 해당 영역이 완전히
+          숨겨집니다.
+        </p>
+        <p className="mt-1 text-[11px]">
+          이미지 10MB 이하 (jpg, png, webp) · 동영상 50MB 이하 (mp4, webm, mov)
         </p>
       </div>
 
       {placements.map((placement) => {
         const draft = drafts[placement.id] ?? placement;
         const isSaving = savingId === placement.id;
+        const isUploading = uploadingId === placement.id;
+        const mediaType = draft.media_type ?? "image";
 
         return (
           <section
@@ -182,9 +254,44 @@ export function AdsManager() {
                 ))}
               </div>
 
+              <div>
+                <span className="mb-1 block text-[11px] font-medium text-muted">
+                  파일 업로드
+                </span>
+                <input
+                  ref={(el) => {
+                    fileInputRefs.current[placement.id] = el;
+                  }}
+                  type="file"
+                  accept={ACCEPT_BY_TYPE[mediaType]}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void handleUpload(placement.id, file);
+                  }}
+                />
+                <button
+                  type="button"
+                  disabled={isUploading || isSaving}
+                  onClick={() => fileInputRefs.current[placement.id]?.click()}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-mint/40 bg-mint/5 py-3 text-xs font-medium text-mint-dark transition hover:bg-mint/10 disabled:opacity-50"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                  {isUploading
+                    ? "업로드 중..."
+                    : mediaType === "image"
+                      ? "이미지 선택 · 업로드"
+                      : "동영상 선택 · 업로드"}
+                </button>
+              </div>
+
               <label className="block">
                 <span className="mb-1 block text-[11px] font-medium text-muted">
-                  미디어 URL *
+                  또는 미디어 URL
                 </span>
                 <input
                   type="url"
@@ -250,7 +357,7 @@ export function AdsManager() {
 
               <button
                 type="button"
-                disabled={isSaving}
+                disabled={isSaving || isUploading}
                 onClick={() => void handleSave(placement.id)}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-foreground py-2.5 text-xs font-semibold text-white transition hover:bg-foreground/90 disabled:opacity-50"
               >

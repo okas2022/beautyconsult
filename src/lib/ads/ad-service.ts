@@ -142,7 +142,11 @@ export async function updateAdPlacement(
       if (error) throw error;
       return rowToPlacement(data as Record<string, unknown>);
     } catch (err) {
-      console.error("[updateAdPlacement] db error, file fallback:", err);
+      console.error("[updateAdPlacement] db error:", err);
+      if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+        throw err;
+      }
+      console.warn("[updateAdPlacement] dev file fallback");
     }
   }
 

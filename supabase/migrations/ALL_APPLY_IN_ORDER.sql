@@ -191,3 +191,31 @@ VALUES
   ('mypage_membership_below', '마이페이지 · 멤버십 아래', 'Premium 카드와 메뉴 사이', false),
   ('simulate_header_below', '시뮬레이터 · 헤더 아래', '멤버십 카드 아래, 업로드 영역 위', false)
 ON CONFLICT (id) DO NOTHING;
+
+-- ========== 20250615000000_ad_media_storage.sql ==========
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'ad-media',
+  'ad-media',
+  true,
+  52428800,
+  ARRAY[
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'video/mp4',
+    'video/webm',
+    'video/quicktime'
+  ]
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DO $$ BEGIN
+  CREATE POLICY "ad_media_public_read"
+    ON storage.objects FOR SELECT
+    USING (bucket_id = 'ad-media');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
